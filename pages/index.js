@@ -33,6 +33,8 @@ export default function Home() {
   const [citas, setCitas] = useState([]);
   const [horasDisponibles, setHorasDisponibles] = useState([]);
   const [fechaDisponible, setFechaDisponible] = useState(true);
+  const [adminPass, setAdminPass] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const fetchHorarios = async () => {
@@ -79,7 +81,6 @@ export default function Home() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!form.nombre || !form.telefono || !form.fecha || !form.servicio || !form.hora) return;
 
     try {
@@ -111,30 +112,21 @@ export default function Home() {
     }
   };
 
-  const handleExportarCitas = async () => {
-    const clave = prompt("Introduce la clave de administrador:");
-    if (clave !== "admin123") {
-      alert("Clave incorrecta.");
-      return;
-    }
+  const isFormValid = () => {
+    return form.nombre && form.telefono && form.fecha && form.hora && form.servicio;
+  };
 
-    try {
-      const res = await fetch("/api/exportarCitas");
-      const data = await res.json();
-      if (res.ok) {
-        alert("Citas exportadas correctamente");
-        window.open(data.file, "_blank");
-      } else {
-        alert(data.message || "Error al exportar citas");
-      }
-    } catch (error) {
-      alert("Hubo un error al exportar las citas");
-      console.error(error);
+  const handleAdminLogin = () => {
+    if (adminPass === "admin123") {
+      setIsAdmin(true);
+      setAdminPass("");
+    } else {
+      alert("Contraseña incorrecta");
     }
   };
 
-  const isFormValid = () => {
-    return form.nombre && form.telefono && form.fecha && form.hora && form.servicio;
+  const handleExportarCSV = () => {
+    window.open("/api/exportarCitas", "_blank");
   };
 
   return (
@@ -148,34 +140,20 @@ export default function Home() {
           flexWrap: "wrap",
         }}
       >
-        <img
-          src="/lambo.png"
-          alt="Lambo"
-          style={{ width: "60px", height: "auto" }}
-        />
+        <img src="/lambo.png" alt="Lambo" style={{ width: "60px", height: "auto" }} />
         <div>
-          <img
-            src="/logo-cjmotor.png"
-            alt="Logo CJ MOTOR"
-            style={{ width: "130px", height: "auto" }}
-          />
-          <p
-            style={{
-              fontSize: "18px",
-              fontWeight: "300",
-              fontFamily: "'Roboto', sans-serif",
-              marginTop: "10px",
-              letterSpacing: "1px",
-            }}
-          >
+          <img src="/logo-cjmotor.png" alt="Logo CJ MOTOR" style={{ width: "130px", height: "auto" }} />
+          <p style={{
+            fontSize: "18px",
+            fontWeight: "300",
+            fontFamily: "'Roboto', sans-serif",
+            marginTop: "10px",
+            letterSpacing: "1px",
+          }}>
             Gestor de Citas
           </p>
         </div>
-        <img
-          src="/neumaticos.png"
-          alt="Neumáticos"
-          style={{ width: "60px", height: "auto" }}
-        />
+        <img src="/neumaticos.png" alt="Neumáticos" style={{ width: "60px", height: "auto" }} />
       </div>
 
       <Card style={{ backgroundColor: "white", color: "black" }}>
@@ -233,14 +211,25 @@ export default function Home() {
             </Button>
           </form>
 
-          <Button
-            variant="outlined"
-            color="secondary"
-            onClick={handleExportarCitas}
-            style={{ marginTop: "20px" }}
-          >
-            Exportar citas a CSV
-          </Button>
+          <div style={{ marginTop: "30px" }}>
+            {!isAdmin ? (
+              <>
+                <Input
+                  type="password"
+                  placeholder="Contraseña admin"
+                  value={adminPass}
+                  onChange={(e) => setAdminPass(e.target.value)}
+                />
+                <Button onClick={handleAdminLogin} style={{ marginLeft: "10px" }} variant="outlined">
+                  Acceder como admin
+                </Button>
+              </>
+            ) : (
+              <Button onClick={handleExportarCSV} variant="contained" color="secondary">
+                Exportar citas CSV
+              </Button>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>
