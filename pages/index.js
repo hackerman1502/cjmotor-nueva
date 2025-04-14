@@ -1,3 +1,4 @@
+import { supabase } from "../lib/supabaseClient";
 import { useState, useEffect } from "react";
 import {
   Button,
@@ -33,16 +34,19 @@ export default function Home() {
   const [citas, setCitas] = useState([]);
   const [horasDisponibles, setHorasDisponibles] = useState([]);
   const [fechaDisponible, setFechaDisponible] = useState(true);
-  const [adminPass, setAdminPass] = useState("");
-  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Recuperar citas de Supabase
+  const fetchCitas = async () => {
+    const { data, error } = await supabase.from("citas").select("*");
+    if (error) {
+      console.error("Error al obtener citas:", error);
+    } else {
+      setCitas(data); // Guardamos las citas ocupadas
+    }
+  };
 
   useEffect(() => {
-    const fetchHorarios = async () => {
-      const response = await fetch("/horarios.json");
-      const data = await response.json();
-      setCitas(data.citas);
-    };
-    fetchHorarios();
+    fetchCitas();
   }, []);
 
   const checkFechaDisponible = (fecha, hora) => {
@@ -57,7 +61,7 @@ export default function Home() {
     setForm(updatedForm);
 
     if ((field === "fecha" || field === "hora") && updatedForm.fecha && updatedForm.hora) {
-      checkFechaDisponible(updatedForm.fecha, updatedForm.hora);
+      checkFechaDisponible(updatedForm.fecha, updatedForm.hora); // Verificamos si la fecha y la hora están ocupadas
     }
   };
 
@@ -65,34 +69,45 @@ export default function Home() {
     const fechaSeleccionada = new Date(e.target.value);
     const diaSemana = fechaSeleccionada.getDay();
 
-    if (diaSemana === 0) {
-      alert("No se puede seleccionar domingos");
-      setForm({ ...form, fecha: "" });
-      setHorasDisponibles([]);
-      return;
+    let horasDisponiblesDelDia = [];
+    if (diaSemana !== 0) {
+      const diaNombre = Object.keys(HORARIOS_DISPONIBLES)[diaSemana - 1];
+      horasDisponiblesDelDia = HORARIOS_DISPONIBLES[diaNombre];
     }
 
-    const diaNombre = Object.keys(HORARIOS_DISPONIBLES)[diaSemana - 1];
-    const horasDisponiblesDelDia = HORARIOS_DISPONIBLES[diaNombre];
+    // Filtrar horas ocupadas
+    const horasDisponiblesFiltradas = horasDisponiblesDelDia.filter((hora) => {
+      return !citas.some((cita) => cita.fecha === e.target.value && cita.hora === hora);
+    });
 
-    setHorasDisponibles(horasDisponiblesDelDia);
-    setForm({ ...form, fecha: e.target.value, hora: "" });
+    setHorasDisponibles(horasDisponiblesFiltradas);
+    setForm({ ...form, fecha: e.target.value, hora: "" }); // Limpiar la hora al cambiar la fecha
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!form.nombre || !form.telefono || !form.fecha || !form.servicio || !form.hora) return;
 
     try {
-      const response = await fetch("/api/guardarCitas", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ cita: form }),
-      });
+      // Guardar cita en Supabase
+      const { data, error } = await supabase
+        .from('citas')
+        .insert([
+          {
+            nombre: form.nombre,
+            telefono: form.telefono,
+            fecha: form.fecha,
+            hora: form.hora,
+            servicio: form.servicio,
+            comentario: form.comentario
+          }
+        ]);
 
-      if (response.ok) {
+      if (error) {
+        alert("Error al guardar la cita");
+        console.error("Error de Supabase:", error);
+      } else {
         alert("Cita guardada correctamente");
         setForm({
           nombre: "",
@@ -102,9 +117,7 @@ export default function Home() {
           comentario: "",
           hora: "",
         });
-      } else {
-        const data = await response.json();
-        alert(data.message);
+        fetchCitas(); // Volver a obtener las citas actualizadas
       }
     } catch (error) {
       alert("Hubo un error al enviar la cita");
@@ -116,17 +129,42 @@ export default function Home() {
     return form.nombre && form.telefono && form.fecha && form.hora && form.servicio;
   };
 
-  const handleAdminLogin = () => {
-    if (adminPass === "admin123") {
-      setIsAdmin(true);
-      setAdminPass("");
-    } else {
-      alert("Contraseña incorrecta");
-    }
-  };
+  const exportarCSV = () => {
+    const contraseña = prompt("Introduce la contraseña de administrador:");
 
-  const handleExportarCSV = () => {
-    window.open("/api/exportarCitas", "_blank");
+    if (contraseña !== "admin123") {
+      alert("Contraseña incorrecta");
+      return;
+    }
+
+    if (!citas.length) {
+      alert("No hay citas para exportar.");
+      return;
+    }
+
+    const encabezado = ["Nombre", "Teléfono", "Fecha", "Hora", "Servicio", "Comentario"];
+    const filas = citas.map((cita) => [
+      cita.nombre,
+      cita.telefono,
+      cita.fecha,
+      cita.hora,
+      cita.servicio,
+      cita.comentario?.replace(/\n/g, " ") || "",
+    ]);
+
+    const csvContent =
+      [encabezado, ...filas]
+        .map((fila) => fila.map((campo) => `"${campo}"`).join(","))
+        .join("\n");
+
+    const fechaActual = new Date().toISOString().split("T")[0];
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.setAttribute("href", url);
+    link.setAttribute("download", `citas-${fechaActual}.csv`);
+    link.click();
   };
 
   return (
@@ -143,20 +181,22 @@ export default function Home() {
         <img src="/lambo.png" alt="Lambo" style={{ width: "60px", height: "auto" }} />
         <div>
           <img src="/logo-cjmotor.png" alt="Logo CJ MOTOR" style={{ width: "130px", height: "auto" }} />
-          <p style={{
-            fontSize: "18px",
-            fontWeight: "300",
-            fontFamily: "'Roboto', sans-serif",
-            marginTop: "10px",
-            letterSpacing: "1px",
-          }}>
+          <p
+            style={{
+              fontSize: "18px",
+              fontWeight: "300",
+              fontFamily: "'Roboto', sans-serif",
+              marginTop: "10px",
+              letterSpacing: "1px",
+            }}
+          >
             Gestor de Citas
           </p>
         </div>
         <img src="/neumaticos.png" alt="Neumáticos" style={{ width: "60px", height: "auto" }} />
       </div>
 
-      <Card style={{ backgroundColor: "white", color: "black" }}>
+      <Card style={{ backgroundColor: "white", color: "black", marginBottom: "20px" }}>
         <CardContent>
           <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
             <div>
@@ -165,7 +205,16 @@ export default function Home() {
             </div>
             <div>
               <InputLabel>Teléfono</InputLabel>
-              <Input value={form.telefono} onChange={(e) => handleChange("telefono", e.target.value)} fullWidth />
+              <Input
+                value={form.telefono}
+                onChange={(e) => handleChange("telefono", e.target.value)}
+                fullWidth
+                type="text" // Usamos type="text" para filtrar el input manualmente
+                onInput={(e) => {
+                  // Solo permite números, eliminando todo lo que no sea un dígito
+                  e.target.value = e.target.value.replace(/[^0-9]/g, "");
+                }}
+              />
             </div>
             <div>
               <InputLabel>Día</InputLabel>
@@ -177,7 +226,7 @@ export default function Home() {
                 value={form.hora}
                 onChange={(e) => handleChange("hora", e.target.value)}
                 fullWidth
-                disabled={horasDisponibles.length === 0}
+                disabled={horasDisponibles.length === 0 || !fechaDisponible}
               >
                 {horasDisponibles.map((hora, index) => (
                   <MenuItem key={index} value={hora}>
@@ -185,6 +234,11 @@ export default function Home() {
                   </MenuItem>
                 ))}
               </Select>
+              {form.fecha && horasDisponibles.length === 0 && (
+                <p style={{ color: "red", fontSize: "14px", marginTop: "5px" }}>
+                  No hay horas disponibles para este día.
+                </p>
+              )}
             </div>
             <div>
               <FormControl fullWidth>
@@ -209,29 +263,31 @@ export default function Home() {
             <Button type="submit" variant="contained" disabled={!isFormValid()}>
               Reservar cita
             </Button>
+            <Button
+              variant="contained"
+              style={{
+                marginTop: "10px",
+                backgroundColor: "#333", // gris oscuro para destacar sobre fondo blanco o negro
+                color: "#fff",
+              }}
+              onClick={() => {
+                const pass = prompt("Introduce la contraseña de administrador:");
+                if (pass === "admin123") {
+                  window.location.href = "/admin-panel";
+                } else {
+                  alert("Contraseña incorrecta");
+                }
+              }}
+            >
+              Ver panel de citas
+            </Button>
           </form>
-
-          <div style={{ marginTop: "30px" }}>
-            {!isAdmin ? (
-              <>
-                <Input
-                  type="password"
-                  placeholder="Contraseña admin"
-                  value={adminPass}
-                  onChange={(e) => setAdminPass(e.target.value)}
-                />
-                <Button onClick={handleAdminLogin} style={{ marginLeft: "10px" }} variant="outlined">
-                  Acceder como admin
-                </Button>
-              </>
-            ) : (
-              <Button onClick={handleExportarCSV} variant="contained" color="secondary">
-                Exportar citas CSV
-              </Button>
-            )}
-          </div>
         </CardContent>
       </Card>
+
+      <Button variant="outlined" onClick={exportarCSV}>
+        Exportar citas CSV
+      </Button>
     </div>
   );
 }

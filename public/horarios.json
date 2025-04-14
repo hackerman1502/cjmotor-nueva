@@ -1,9 +1,35 @@
 {
   "citas": [
     {
-      "nombre": "Pepiño",
+      "id": 1,
+      "nombre": "Juan Pérez",
+      "telefono": "123456789",
+      "fecha": "2025-04-15",
+      "hora": "10:00",
+      "servicio": "Cambio de aceite",
+      "comentario": "Revisar filtros"
+    },
+    {
+      "id": 2,
+      "nombre": "Ana García",
+      "telefono": "987654321",
+      "fecha": "2025-04-15",
+      "hora": "11:00",
+      "servicio": "Revisión general",
+      "comentario": "Ajustar frenos"
+    },
+    {
+      "nombre": "dasdas",
+      "telefono": "fdsfdfs",
+      "fecha": "2025-04-15",
+      "hora": "12:00",
+      "servicio": "Cambio de aceite",
+      "comentario": ""
+    },
+    {
+      "nombre": "Xiancito",
       "telefono": "666357796",
-      "fecha": "2025-04-17",
+      "fecha": "2025-04-16",
       "hora": "13:00",
       "servicio": "Cambio de aceite",
       "comentario": ""

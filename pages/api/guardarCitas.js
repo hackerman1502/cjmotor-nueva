@@ -1,40 +1,25 @@
-import fs from 'fs';
-import path from 'path';
+import { supabase } from "../../lib/supabaseClient";
 
-export default function handler(req, res) {
-  if (req.method === 'POST') {
+export default async function handler(req, res) {
+  if (req.method === "POST") {
     const { cita } = req.body;
 
-    const filePath = path.join(process.cwd(), 'public', 'horarios.json');
-
-    let citas = [];
-
-    try {
-      const fileData = fs.readFileSync(filePath, 'utf8');
-      citas = JSON.parse(fileData).citas || [];
-    } catch (error) {
-      console.log("No hay citas previas o error leyendo el archivo:", error);
+    // Validación básica
+    if (!cita.nombre || !cita.telefono || !cita.fecha || !cita.hora || !cita.servicio) {
+      return res.status(400).json({ message: "Faltan datos obligatorios" });
     }
 
-    // Validar si ya hay una cita en la misma fecha y hora
-    const existe = citas.some((c) => {
-      return (
-        c.fecha.split("T")[0] === cita.fecha.split("T")[0] &&
-        c.hora === cita.hora
-      );
-    });
+    // Insertar en la tabla "citas" de Supabase
+    const { data, error } = await supabase.from("citas").insert([cita]);
 
-    if (existe) {
-      return res.status(400).json({ message: 'Ya existe una cita en esa hora.' });
+    if (error) {
+      console.error("Error al guardar en Supabase:", error);
+      return res.status(500).json({ message: "Error al guardar la cita", error });
     }
 
-    citas.push(cita);
-
-    fs.writeFileSync(filePath, JSON.stringify({ citas }, null, 2));
-
-    return res.status(200).json({ message: 'Cita guardada correctamente' });
+    return res.status(200).json({ message: "Cita guardada correctamente", data });
   }
 
-  return res.status(405).json({ message: 'Método no permitido' });
+  return res.status(405).json({ message: "Método no permitido" });
 }
 
