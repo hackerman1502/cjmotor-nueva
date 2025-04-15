@@ -65,12 +65,12 @@ export default function UserPanel() {
       </Button>
 
       <Button
-        variant="contained"
-        style={styles.button}
-        onClick={() => router.push("/")}
-      >
-        Solicitar cita
-      </Button>
+  variant="contained"
+  style={styles.button}
+  onClick={() => router.push('/index.js')}
+>
+  Solicitar cita
+</Button>
     </div>
   );
 }
