@@ -284,10 +284,6 @@ export default function Home() {
           </form>
         </CardContent>
       </Card>
-
-      <Button variant="outlined" onClick={exportarCSV}>
-        Exportar citas CSV
-      </Button>
     </div>
   );
 }
