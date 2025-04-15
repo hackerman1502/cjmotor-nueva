@@ -48,17 +48,11 @@ export default function AdminPanel() {
       const { data, error } = await supabase.from("citas").select("*");
       if (!error) setCitas(data);
     };
+
     fetchCitas();
   }, []);
 
-  const exportarCSV = (citas) => {
-    const contraseña = prompt("Introduce la contraseña de administrador:");
-
-    if (contraseña !== "admin123") {
-      alert("Contraseña incorrecta");
-      return;
-    }
-
+  const exportarCSV = () => {
     if (!citas.length) {
       alert("No hay citas para exportar.");
       return;
@@ -120,7 +114,7 @@ export default function AdminPanel() {
       <Button
         variant="contained"
         style={styles.button}
-        onClick={() => exportarCSV(citas)}
+        onClick={exportarCSV}
       >
         Exportar citas CSV
       </Button>
