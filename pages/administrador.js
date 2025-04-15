@@ -12,17 +12,13 @@ const styles = {
   },
   header: {
     display: "flex",
-    justifyContent: "space-between",
+    justifyContent: "center",
     alignItems: "center",
     marginBottom: "20px",
-    flexWrap: "wrap",
+    flexDirection: "column",
   },
   logo: {
     width: "130px",
-    height: "auto",
-  },
-  imgSmall: {
-    width: "60px",
     height: "auto",
   },
   title: {
@@ -94,12 +90,8 @@ export default function AdminPanel() {
   return (
     <div style={styles.container}>
       <div style={styles.header}>
-        <img src="/lambo.png" alt="Lambo" style={styles.imgSmall} />
-        <div>
-          <img src="/logo-cjmotor.png" alt="Logo CJ MOTOR" style={styles.logo} />
-          <p style={styles.title}>Panel de Administración</p>
-        </div>
-        <img src="/neumaticos.png" alt="Neumáticos" style={styles.imgSmall} />
+        <img src="/logo-cjmotor.png" alt="Logo CJ MOTOR" style={styles.logo} />
+        <p style={styles.title}>Panel de Administración</p>
       </div>
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
