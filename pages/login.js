@@ -1,12 +1,32 @@
 import Image from 'next/image';
 import Head from 'next/head';
 import { useState } from 'react';
+import { useRouter } from 'next/router';
 
 export default function Login() {
   const [showForm, setShowForm] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const router = useRouter();
 
   const handleAccessClick = () => {
     setShowForm(true);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    
+    // Usuario y contraseña predeterminados
+    const adminUser = 'admin';
+    const adminPassword = 'admin';
+    
+    // Validar el usuario y la contraseña
+    if (email === adminUser && password === adminPassword) {
+      // Redirigir al panel de administración
+      router.push('/admin-panel');
+    } else {
+      alert('Credenciales incorrectas');
+    }
   };
 
   return (
@@ -40,19 +60,23 @@ export default function Login() {
           )}
 
           {showForm && (
-            <div style={styles.formWrapper}>
+            <form style={styles.formWrapper} onSubmit={handleSubmit}>
               <input
                 type="email"
                 placeholder="Correo electrónico"
                 style={styles.input}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
               <input
                 type="password"
                 placeholder="Contraseña"
                 style={styles.input}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
-              <button style={styles.button}>Entrar</button>
-            </div>
+              <button type="submit" style={styles.button}>Entrar</button>
+            </form>
           )}
         </div>
       </div>
@@ -73,7 +97,7 @@ const styles = {
   content: {
     textAlign: 'center',
     color: '#fff',
-    maxWidth: '400px',
+    maxWidth: '320px',
     width: '100%',
   },
   logoWrapper: {
@@ -102,6 +126,7 @@ const styles = {
     cursor: 'pointer',
     fontWeight: 500,
     transition: 'all 0.3s ease',
+    marginTop: '1rem',
   },
   formWrapper: {
     marginTop: '1rem',
@@ -109,7 +134,7 @@ const styles = {
     flexDirection: 'column',
     gap: '1rem',
     width: '100%',
-    maxWidth: '250px',
+    maxWidth: '320px',
     marginInline: 'auto',
   },
   input: {
@@ -120,6 +145,6 @@ const styles = {
     color: '#fff',
     fontSize: '1rem',
     outline: 'none',
+    transition: 'all 0.3s ease',
   },
 };
-
