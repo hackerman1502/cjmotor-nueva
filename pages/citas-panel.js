@@ -4,8 +4,8 @@ import { useRouter } from "next/router";
 import { createClient } from '@supabase/supabase-js';
 
 // Configuración de Supabase
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseUrl = "https://lslvykkxyqtkcyrxxzey.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxzbHZ5a2t4eXF0a2N5cnh4emV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2NTAwODQsImV4cCI6MjA2MDIyNjA4NH0.JnVxWZWB4Lbod01G23PSNzq6bd6N-DCXXxZeLci8Oc8";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // ...imports y configuración Supabase igual que antes
@@ -61,14 +61,18 @@ export default function CitasPanel() {
       
       {/* Encabezado con botón atrás y logo */}
 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
-  <Button
-    variant="contained"
-    color="secondary"
-    onClick={() => router.push("/admin-panel")}
-    style={{ marginRight: "10px" }}
-  >
-    Atrás
-  </Button>
+<Button
+  variant="contained"
+  onClick={() => router.push("/administrador")}
+  style={{
+    backgroundColor: "white",  // Fondo blanco
+    color: "black",            // Texto negro
+    border: "1px solid #ccc",  // Borde opcional (puedes personalizarlo)
+    marginRight: "10px",       // Mantener el margen
+  }}
+>
+  Atrás
+</Button>
   <img src="/logo-cjmotor.png" alt="Logo" style={{ width: "130px", height: "auto" }} />
 </div>
 
@@ -134,7 +138,8 @@ export default function CitasPanel() {
                       {cita.estado === "Pendiente" && (
                         <Button
                           variant="contained"
-                          color="primary"
+                          backgroundcolor="black"
+                          color="white"
                           onClick={() => handleMarkCompleted(cita.id)}
                         >
                           Marcar como Completada

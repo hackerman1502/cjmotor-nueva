@@ -8,8 +8,8 @@ import interactionPlugin from "@fullcalendar/interaction"; // para poder hacer c
 import { createClient } from '@supabase/supabase-js';
 
 // Configuración de Supabase
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseUrl = "https://lslvykkxyqtkcyrxxzey.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxzbHZ5a2t4eXF0a2N5cnh4emV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2NTAwODQsImV4cCI6MjA2MDIyNjA4NH0.JnVxWZWB4Lbod01G23PSNzq6bd6N-DCXXxZeLci8Oc8";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function AdminPanel() {
@@ -17,6 +17,11 @@ export default function AdminPanel() {
   const [eventoSeleccionado, setEventoSeleccionado] = useState(null);
   const router = useRouter();
 
+    // Función para redirigir a la página principal
+    const handleGoHome = () => {
+      router.push('/administrador');  // Redirige a la página principal
+    };
+    
   // Función para obtener las citas
   const fetchCitas = async () => {
     const { data, error } = await supabase
@@ -77,11 +82,21 @@ export default function AdminPanel() {
   };
 
   return (
-    <div style={{ backgroundColor: "black", color: "white", padding: "20px", minHeight: "100vh" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-        <IconButton onClick={() => router.push("/")} style={{ color: "white", marginRight: "20px" }}>
-          <HomeIcon />
-        </IconButton>
+    <div style={{ backgroundColor: "black", color: "white", padding: "20px", minHeight: "100vh" }}>   
+          {/* Encabezado con botón atrás y logo */}
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+    <Button
+      variant="contained"
+      onClick={() => router.push("/administrador")}
+      style={{
+        backgroundColor: "white",  // Fondo blanco
+        color: "black",            // Texto negro
+        border: "1px solid #ccc",  // Borde opcional (puedes personalizarlo)
+        marginRight: "10px",       // Mantener el margen
+      }}
+    >
+      Atrás
+    </Button>
         <img src="/logo-cjmotor.png" alt="Logo" style={{ width: "130px", height: "auto" }} />
       </div>
 
@@ -104,16 +119,6 @@ export default function AdminPanel() {
           />
         </CardContent>
       </Card>
-
-      <div style={{ marginTop: "20px", textAlign: "right" }}>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => router.push("/citas-panel")}
-        >
-          Listado de citas
-        </Button>
-      </div>
 
       <Dialog open={Boolean(eventoSeleccionado)} onClose={handleCloseDialog}>
         <DialogTitle>Detalles de la Cita</DialogTitle>
@@ -139,6 +144,7 @@ export default function AdminPanel() {
           )}
         </DialogContent>
       </Dialog>
+      
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { Button } from "@mui/material";
 import { useRouter } from "next/router";
 import Image from "next/image";
 
+
 const styles = {
   container: {
     padding: "20px",
@@ -43,6 +44,11 @@ const styles = {
 export default function UserPanel() {
   const router = useRouter();
 
+    // Función para redirigir a la página principal
+    const handleGoHome = () => {
+      router.push('/login');  // Redirige a la página principal
+    };
+
   return (
     <div style={styles.container}>
       <div style={styles.header}>
@@ -71,7 +77,20 @@ export default function UserPanel() {
 >
   Solicitar cita
 </Button>
-    </div>
+<div style={{ display: "flex", justifyContent: "flex-start", marginTop: "20px" }}>
+            <Button
+              variant="contained"
+              style={{
+                backgroundColor: "white",
+                color: "black",
+              }}
+              onClick={handleGoHome}
+            >
+              Volver a login
+            </Button>
+          </div>
+    </div> 
   );
+
 }
 

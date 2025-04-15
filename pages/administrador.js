@@ -41,6 +41,11 @@ const styles = {
 
 export default function AdminPanel() {
   const router = useRouter();
+
+    // Función para redirigir a la página principal
+    const handleGoHome = () => {
+      router.push('/login');  // Redirige a la página principal
+    };
   const [citas, setCitas] = useState([]);
 
   useEffect(() => {
@@ -118,6 +123,19 @@ export default function AdminPanel() {
       >
         Exportar citas CSV
       </Button>
+      <div style={{ display: "flex", justifyContent: "flex-start", marginTop: "20px" }}>
+            <Button
+              variant="contained"
+              style={{
+                backgroundColor: "white",
+                color: "black",
+              }}
+              onClick={handleGoHome}
+            >
+              Volver a login
+            </Button>
+          </div>
+
     </div>
   );
 }

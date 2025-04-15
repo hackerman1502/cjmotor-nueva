@@ -11,6 +11,7 @@ import {
   Card,
   CardContent,
 } from "@mui/material";
+import { useRouter } from 'next/router';
 
 const HORARIOS_DISPONIBLES = {
   lunes: ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00"],
@@ -35,6 +36,15 @@ export default function Home() {
   const [horasDisponibles, setHorasDisponibles] = useState([]);
   const [fechaDisponible, setFechaDisponible] = useState(true);
   const [mensajeExito, setMensajeExito] = useState("");  // Estado para manejar el mensaje de éxito
+  
+
+  // Instanciar useRouter
+  const router = useRouter();
+
+  // Función para redirigir a la página principal
+  const handleGoHome = () => {
+    router.push('/user-panel');  // Redirige a la página principal
+  };
 
   // Recuperar citas de Supabase
   const fetchCitas = async () => {
@@ -267,27 +277,24 @@ export default function Home() {
             <Button type="submit" variant="contained" disabled={!isFormValid()}>
               Reservar cita
             </Button>
+
+          </form>
+
+          <div style={{ display: "flex", justifyContent: "flex-start", marginTop: "20px" }}>
             <Button
               variant="contained"
               style={{
-                marginTop: "10px",
-                backgroundColor: "#333", // gris oscuro para destacar sobre fondo blanco o negro
-                color: "#fff",
+                backgroundColor: "black",
+                color: "white",
               }}
-              onClick={() => {
-                const pass = prompt("Introduce la contraseña de administrador:");
-                if (pass === "admin123") {
-                  window.location.href = "/admin-panel";
-                } else {
-                  alert("Contraseña incorrecta");
-                }
-              }}
+              onClick={handleGoHome}
             >
-              Ver panel de citas
+              Volver
             </Button>
-          </form>
+          </div>
         </CardContent>
       </Card>
+
     </div>
   );
 }
