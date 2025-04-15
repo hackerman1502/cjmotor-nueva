@@ -112,7 +112,7 @@ export default function AdminPanel() {
       <Button
         variant="contained"
         style={styles.button}
-        onClick={() => router.push("/")}
+        onClick={() => router.push("registro-cita-admin")}
       >
         Registro cita
       </Button>
