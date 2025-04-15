@@ -17,16 +17,16 @@ export default function AdminPanel() {
           onClick={() => router.push("/admin-panel")}
           style={styles.button}
         >
-          Acceder al Panel
+          Calendario citas
         </Button>
 
         <Button
           variant="contained"
-          color="secondary"
-          onClick={() => router.push("/admin-citas")}
+          color="primary"
+          onClick={() => router.push("/citas-panel")}
           style={styles.button}
         >
-          Ver Citas
+          Listado citas
         </Button>
       </div>
     </div>
@@ -60,6 +60,7 @@ const styles = {
     fontSize: '16px',
     padding: '12px',
     borderRadius: '8px',
+    backgroundColor: '#fff', // Botones en blanco
+    color: '#000',           // Texto negro en los botones
   },
 };
-
