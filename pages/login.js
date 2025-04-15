@@ -23,7 +23,7 @@ export default function Login() {
     // Validar el usuario y la contraseña
     if (email === adminUser && password === adminPassword) {
       // Redirigir al panel de administración
-      router.push('/admin-panel');
+      router.push('/administrador');
     } else {
       alert('Credenciales incorrectas');
     }
