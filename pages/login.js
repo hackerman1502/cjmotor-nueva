@@ -51,9 +51,7 @@ export default function Login() {
                 placeholder="Contraseña"
                 style={styles.input}
               />
-              <button style={{ ...styles.button, marginTop: '1rem' }}>
-                Entrar
-              </button>
+              <button style={styles.button}>Entrar</button>
             </div>
           )}
         </div>
@@ -101,7 +99,6 @@ const styles = {
     borderRadius: '8px',
     fontSize: '1rem',
     width: '100%',
-    maxWidth: '250px',
     cursor: 'pointer',
     fontWeight: 500,
     transition: 'all 0.3s ease',
@@ -111,6 +108,9 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     gap: '1rem',
+    width: '100%',
+    maxWidth: '250px',
+    marginInline: 'auto',
   },
   input: {
     padding: '12px 15px',
@@ -122,3 +122,4 @@ const styles = {
     outline: 'none',
   },
 };
+
