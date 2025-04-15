@@ -67,7 +67,7 @@ export default function UserPanel() {
       <Button
   variant="contained"
   style={styles.button}
-  onClick={() => router.push("/index.js")}
+  onClick={() => router.push("/")}
 >
   Solicitar cita
 </Button>
