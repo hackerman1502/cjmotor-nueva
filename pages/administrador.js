@@ -9,13 +9,15 @@ const styles = {
     backgroundColor: "black",
     color: "white",
     minHeight: "100vh",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
   },
   header: {
     display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: "20px",
     flexDirection: "column",
+    alignItems: "center",
+    marginBottom: "30px",
   },
   logo: {
     width: "130px",
@@ -32,8 +34,8 @@ const styles = {
   button: {
     backgroundColor: "white",
     color: "black",
-    marginTop: "10px",
-    marginRight: "10px",
+    margin: "10px 0",
+    width: "200px",
   },
 };
 
@@ -94,36 +96,34 @@ export default function AdminPanel() {
         <p style={styles.title}>Panel de Administración</p>
       </div>
 
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
-        <Button
-          variant="contained"
-          style={styles.button}
-          onClick={() => router.push("/admin-panel")}
-        >
-          Calendario citas
-        </Button>
-        <Button
-          variant="contained"
-          style={styles.button}
-          onClick={() => router.push("/citas-panel")}
-        >
-          Gestionar citas
-        </Button>
-        <Button
-          variant="contained"
-          style={styles.button}
-          onClick={() => router.push("/")}
-        >
-          Registro cita
-        </Button>
-        <Button
-          variant="contained"
-          style={styles.button}
-          onClick={() => exportarCSV(citas)}
-        >
-          Exportar citas CSV
-        </Button>
-      </div>
+      <Button
+        variant="contained"
+        style={styles.button}
+        onClick={() => router.push("/admin-panel")}
+      >
+        Ver citas
+      </Button>
+      <Button
+        variant="contained"
+        style={styles.button}
+        onClick={() => router.push("/admin-citas")}
+      >
+        Gestionar citas
+      </Button>
+      <Button
+        variant="contained"
+        style={styles.button}
+        onClick={() => router.push("/")}
+      >
+        Registro cita
+      </Button>
+      <Button
+        variant="contained"
+        style={styles.button}
+        onClick={() => exportarCSV(citas)}
+      >
+        Exportar citas CSV
+      </Button>
     </div>
   );
 }
