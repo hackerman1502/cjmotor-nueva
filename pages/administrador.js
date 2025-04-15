@@ -101,12 +101,12 @@ export default function AdminPanel() {
         style={styles.button}
         onClick={() => router.push("/admin-panel")}
       >
-        Ver citas
+        Calendario citas
       </Button>
       <Button
         variant="contained"
         style={styles.button}
-        onClick={() => router.push("/admin-citas")}
+        onClick={() => router.push("/citas-panel")}
       >
         Gestionar citas
       </Button>
