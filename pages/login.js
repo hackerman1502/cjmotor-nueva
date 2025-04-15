@@ -5,17 +5,18 @@ export default function Login() {
   return (
     <div style={styles.container}>
       <div style={styles.content}>
-        <Image
-          src="/logo-cjmotor.png"
-          alt="Logo CJMOTOR"
-          width={200}
-          height={200}
-          style={styles.logo}
-        />
+        <div style={styles.logoWrapper}>
+          <Image
+            src="/logo-cjmotor.png"
+            alt="Logo CJMOTOR"
+            layout="responsive"
+            width={200}
+            height={200}
+          />
+        </div>
         <h1 style={styles.title}>Bienvenido a CJMOTOR</h1>
         <p style={styles.subtitle}>Inicia sesión para gestionar tus citas</p>
         <button style={styles.button}>Acceder</button>
-        <h1 style={styles.title}>Proximamente...</h1>
       </div>
     </div>
   );
@@ -24,33 +25,41 @@ export default function Login() {
 const styles = {
   container: {
     backgroundColor: '#000',
-    height: '100vh',
+    minHeight: '100vh',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
+    padding: '20px',
   },
   content: {
     textAlign: 'center',
     color: '#fff',
+    maxWidth: '400px',
+    width: '100%',
   },
-  logo: {
-    marginBottom: '2rem',
+  logoWrapper: {
+    width: '60%',
+    margin: '0 auto 2rem',
   },
   title: {
-    fontSize: '2rem',
+    fontSize: '1.8rem',
     marginBottom: '1rem',
   },
   subtitle: {
     color: '#ccc',
+    fontSize: '1rem',
     marginBottom: '2rem',
   },
   button: {
     backgroundColor: '#e60000',
     color: '#fff',
-    padding: '10px 30px',
+    padding: '12px 20px',
     border: 'none',
     borderRadius: '8px',
     fontSize: '1rem',
+    width: '100%',
+    maxWidth: '250px',
     cursor: 'pointer',
   },
 };
+
