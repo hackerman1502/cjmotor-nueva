@@ -71,6 +71,14 @@ export default function UserPanel() {
       </Button>
 
       <Button
+        variant="contained"
+        style={styles.button}
+        onClick={() => router.push("/perfil")}
+      >
+        Perfil
+      </Button>
+
+      <Button
   variant="contained"
   style={styles.button}
   onClick={() => router.push("/")}

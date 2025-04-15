@@ -35,29 +35,45 @@ export default function Home() {
   const [citas, setCitas] = useState([]);
   const [horasDisponibles, setHorasDisponibles] = useState([]);
   const [fechaDisponible, setFechaDisponible] = useState(true);
-  const [mensajeExito, setMensajeExito] = useState("");  // Estado para manejar el mensaje de éxito
-  
-
-  // Instanciar useRouter
+  const [mensajeExito, setMensajeExito] = useState("");
   const router = useRouter();
 
-  // Función para redirigir a la página principal
   const handleGoHome = () => {
-    router.push('/user-panel');  // Redirige a la página principal
+    router.push('/user-panel');
   };
 
-  // Recuperar citas de Supabase
   const fetchCitas = async () => {
     const { data, error } = await supabase.from("citas").select("*");
     if (error) {
       console.error("Error al obtener citas:", error);
     } else {
-      setCitas(data); // Guardamos las citas ocupadas
+      setCitas(data);
     }
   };
 
   useEffect(() => {
     fetchCitas();
+
+    const fetchPerfil = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: perfil, error } = await supabase
+          .from("perfiles")
+          .select("nombre, telefono")
+          .eq("id", user.id)
+          .single();
+
+        if (perfil && !error) {
+          setForm((prev) => ({
+            ...prev,
+            nombre: perfil.nombre || "",
+            telefono: perfil.telefono || ""
+          }));
+        }
+      }
+    };
+
+    fetchPerfil();
   }, []);
 
   const checkFechaDisponible = (fecha, hora) => {
@@ -72,7 +88,7 @@ export default function Home() {
     setForm(updatedForm);
 
     if ((field === "fecha" || field === "hora") && updatedForm.fecha && updatedForm.hora) {
-      checkFechaDisponible(updatedForm.fecha, updatedForm.hora); // Verificamos si la fecha y la hora están ocupadas
+      checkFechaDisponible(updatedForm.fecha, updatedForm.hora);
     }
   };
 
@@ -86,13 +102,12 @@ export default function Home() {
       horasDisponiblesDelDia = HORARIOS_DISPONIBLES[diaNombre];
     }
 
-    // Filtrar horas ocupadas
     const horasDisponiblesFiltradas = horasDisponiblesDelDia.filter((hora) => {
       return !citas.some((cita) => cita.fecha === e.target.value && cita.hora === hora);
     });
 
     setHorasDisponibles(horasDisponiblesFiltradas);
-    setForm({ ...form, fecha: e.target.value, hora: "" }); // Limpiar la hora al cambiar la fecha
+    setForm({ ...form, fecha: e.target.value, hora: "" });
   };
 
   const handleSubmit = async (e) => {
@@ -101,7 +116,6 @@ export default function Home() {
     if (!form.nombre || !form.telefono || !form.fecha || !form.servicio || !form.hora) return;
 
     try {
-      // Guardar cita en Supabase
       const { data, error } = await supabase
         .from('citas')
         .insert([{
@@ -117,7 +131,7 @@ export default function Home() {
         alert("Error al guardar la cita");
         console.error("Error de Supabase:", error);
       } else {
-        setMensajeExito("Cita guardada correctamente");  // Mostrar mensaje de éxito
+        setMensajeExito("Cita guardada correctamente");
         setForm({
           nombre: "",
           telefono: "",
@@ -126,7 +140,7 @@ export default function Home() {
           comentario: "",
           hora: "",
         });
-        fetchCitas(); // Volver a obtener las citas actualizadas
+        fetchCitas();
       }
     } catch (error) {
       alert("Hubo un error al enviar la cita");
@@ -138,67 +152,13 @@ export default function Home() {
     return form.nombre && form.telefono && form.fecha && form.hora && form.servicio;
   };
 
-  const exportarCSV = () => {
-    const contraseña = prompt("Introduce la contraseña de administrador:");
-
-    if (contraseña !== "admin123") {
-      alert("Contraseña incorrecta");
-      return;
-    }
-
-    if (!citas.length) {
-      alert("No hay citas para exportar.");
-      return;
-    }
-
-    const encabezado = ["Nombre", "Teléfono", "Fecha", "Hora", "Servicio", "Comentario"];
-    const filas = citas.map((cita) => [
-      cita.nombre,
-      cita.telefono,
-      cita.fecha,
-      cita.hora,
-      cita.servicio,
-      cita.comentario?.replace(/\n/g, " ") || "",
-    ]);
-
-    const csvContent =
-      [encabezado, ...filas]
-        .map((fila) => fila.map((campo) => `"${campo}"`).join(","))
-        .join("\n");
-
-    const fechaActual = new Date().toISOString().split("T")[0];
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-
-    link.setAttribute("href", url);
-    link.setAttribute("download", `citas-${fechaActual}.csv`);
-    link.click();
-  };
-
   return (
     <div style={{ padding: "20px", backgroundColor: "black", color: "white", minHeight: "100vh" }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "20px",
-          flexWrap: "wrap",
-        }}
-      >
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap" }}>
         <img src="/lambo.png" alt="Lambo" style={{ width: "60px", height: "auto" }} />
         <div>
           <img src="/logo-cjmotor.png" alt="Logo CJ MOTOR" style={{ width: "130px", height: "auto" }} />
-          <p
-            style={{
-              fontSize: "18px",
-              fontWeight: "300",
-              fontFamily: "'Roboto', sans-serif",
-              marginTop: "10px",
-              letterSpacing: "1px",
-            }}
-          >
+          <p style={{ fontSize: "18px", fontWeight: "300", fontFamily: "'Roboto', sans-serif", marginTop: "10px", letterSpacing: "1px" }}>
             Gestor de Citas
           </p>
         </div>
@@ -223,9 +183,8 @@ export default function Home() {
                 value={form.telefono}
                 onChange={(e) => handleChange("telefono", e.target.value)}
                 fullWidth
-                type="text" // Usamos type="text" para filtrar el input manualmente
+                type="text"
                 onInput={(e) => {
-                  // Solo permite números, eliminando todo lo que no sea un dígito
                   e.target.value = e.target.value.replace(/[^0-9]/g, "");
                 }}
               />
@@ -277,16 +236,12 @@ export default function Home() {
             <Button type="submit" variant="contained" disabled={!isFormValid()}>
               Reservar cita
             </Button>
-
           </form>
 
           <div style={{ display: "flex", justifyContent: "flex-start", marginTop: "20px" }}>
             <Button
               variant="contained"
-              style={{
-                backgroundColor: "black",
-                color: "white",
-              }}
+              style={{ backgroundColor: "black", color: "white" }}
               onClick={handleGoHome}
             >
               Volver
@@ -294,7 +249,6 @@ export default function Home() {
           </div>
         </CardContent>
       </Card>
-
     </div>
   );
 }
