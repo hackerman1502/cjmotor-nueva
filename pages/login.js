@@ -62,7 +62,7 @@ export default function Login() {
           {showForm && (
             <form style={styles.formWrapper} onSubmit={handleSubmit}>
               <input
-                type="email"
+                type="text"
                 placeholder="Correo electrónico"
                 style={styles.input}
                 value={email}
