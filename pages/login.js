@@ -1,24 +1,34 @@
-// pages/login.js
 import Image from 'next/image';
+import Head from 'next/head';
 
 export default function Login() {
   return (
-    <div style={styles.container}>
-      <div style={styles.content}>
-        <div style={styles.logoWrapper}>
-          <Image
-            src="/logo-cjmotor.png"
-            alt="Logo CJMOTOR"
-            layout="responsive"
-            width={200}
-            height={200}
-          />
+    <>
+      <Head>
+        <title>Login - CJMOTOR</title>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap"
+          rel="stylesheet"
+        />
+      </Head>
+
+      <div style={styles.container}>
+        <div style={styles.content}>
+          <div style={styles.logoWrapper}>
+            <Image
+              src="/logo-cjmotor.png"
+              alt="Logo CJMOTOR"
+              layout="responsive"
+              width={200}
+              height={200}
+            />
+          </div>
+          <h1 style={styles.title}>Bienvenido a CJMOTOR</h1>
+          <p style={styles.subtitle}>Inicia sesión para gestionar tus citas</p>
+          <button style={styles.button}>Acceder</button>
         </div>
-        <h1 style={styles.title}>Bienvenido a CJMOTOR</h1>
-        <p style={styles.subtitle}>Inicia sesión para gestionar tus citas</p>
-        <button style={styles.button}>Acceder</button>
       </div>
-    </div>
+    </>
   );
 }
 
@@ -30,6 +40,7 @@ const styles = {
     justifyContent: 'center',
     alignItems: 'center',
     padding: '20px',
+    fontFamily: "'Poppins', sans-serif",
   },
   content: {
     textAlign: 'center',
@@ -44,11 +55,13 @@ const styles = {
   title: {
     fontSize: '1.8rem',
     marginBottom: '1rem',
+    fontWeight: 600,
   },
   subtitle: {
     color: '#ccc',
     fontSize: '1rem',
     marginBottom: '2rem',
+    fontWeight: 300,
   },
   button: {
     backgroundColor: '#e60000',
@@ -60,6 +73,8 @@ const styles = {
     width: '100%',
     maxWidth: '250px',
     cursor: 'pointer',
+    fontWeight: 400,
   },
 };
+
 
