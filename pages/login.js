@@ -104,14 +104,14 @@ const styles = {
     transition: 'all 0.3s ease',
   },
   formWrapper: {
-    marginTop: '1rem',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '1rem',
-    width: '100%',
-    maxWidth: '250px',
-    marginInline: 'auto',
-  },
+  marginTop: '1rem',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '1rem',
+  width: '100%',
+  maxWidth: '320px', // <- más ancho
+  marginInline: 'auto',
+},
   input: {
     padding: '12px 15px',
     borderRadius: '8px',
