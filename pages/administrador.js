@@ -1,52 +1,92 @@
-import { useState, useEffect } from "react";
-import { Card, CardContent, IconButton, Dialog, DialogTitle, DialogContent, Typography, Button } from "@mui/material";
-import HomeIcon from "@mui/icons-material/Home";
-import { useRouter } from "next/router";
-import FullCalendar from "@fullcalendar/react";
-import dayGridPlugin from "@fullcalendar/daygrid";
-import interactionPlugin from "@fullcalendar/interaction";
-import { createClient } from '@supabase/supabase-js';
+// /pages/administrador.js
+import { useEffect } from 'react';
+import { useRouter } from 'next/router';
+import Image from 'next/image';
 
-// Configuración de Supabase
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-export default function AdminPanel() {
-  const [citas, setCitas] = useState([]);
-  const [eventoSeleccionado, setEventoSeleccionado] = useState(null);
+export default function Administrador() {
   const router = useRouter();
 
-  // Función para obtener las citas
-  const fetchCitas = async () => {
-    const { data, error } = await supabase
-      .from("citas")
-      .select("*");
-
-    if (error) {
-      console.error("Error al obtener citas:", error);
-    } else {
-      console.log("Datos de citas desde Supabase:", data);
-      setCitas(data); // Actualiza el estado con los datos recibidos
-    }
-  };
-
-  // UseEffect para cargar las citas al inicio
+  // Redirigir a la página de login si no es admin (opcional)
   useEffect(() => {
-    fetchCitas();
+    // Si no estás logueado o la sesión no es válida, puedes redirigir aquí
+    // router.push('/login');
   }, []);
 
-  const eventos = citas.map((cita) => ({
-    title: `${cita.nombre} - ${cita.servicio}`,
-    start: `${cita.fecha}T${cita.hora}:00`,
-    extendedProps: {
-      nombre: cita.nombre,
-      telefono: cita.telefono,
-      fecha: cita.fecha,
-      hora: cita.hora,
-      servicio: cita.servicio,
-      comentario: cita.comentario,
-    },
-  }));
+  return (
+    <div style={styles.container}>
+      <div style={styles.content}>
+        <div style={styles.logoWrapper}>
+          <Image
+            src="/logo-cjmotor.png"
+            alt="Logo CJMOTOR"
+            layout="responsive"
+            width={130}
+            height={130}
+          />
+        </div>
+        <h1 style={styles.title}>Panel de Administrador</h1>
+        <p style={styles.subtitle}>Bienvenido al panel de administración de CJMOTOR</p>
 
-  const handleEventoClick = (info) =>
+        {/* Aquí agregarías todo lo relacionado con el panel de administración */}
+        <div style={styles.buttonsContainer}>
+          <button style={styles.button} onClick={() => router.push("/citas-panel")}>
+            Gestionar Citas
+          </button>
+          <button style={styles.button} onClick={() => router.push("/otro-panel")}>
+            Otro Panel
+          </button>
+          {/* Puedes añadir más botones según las secciones que quieras */}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const styles = {
+  container: {
+    backgroundColor: '#000',
+    minHeight: '100vh',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: '20px',
+    fontFamily: "'Poppins', sans-serif",
+  },
+  content: {
+    textAlign: 'center',
+    color: '#fff',
+    maxWidth: '320px',
+    width: '100%',
+  },
+  logoWrapper: {
+    width: '60%',
+    margin: '0 auto 2rem',
+  },
+  title: {
+    fontSize: '1.8rem',
+    marginBottom: '1rem',
+    fontWeight: 600,
+  },
+  subtitle: {
+    color: '#ccc',
+    fontSize: '1rem',
+    marginBottom: '2rem',
+    fontWeight: 300,
+  },
+  buttonsContainer: {
+    marginTop: '2rem',
+  },
+  button: {
+    backgroundColor: '#fff',
+    color: '#000',
+    padding: '12px 20px',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '1rem',
+    width: '100%',
+    cursor: 'pointer',
+    fontWeight: 500,
+    transition: 'all 0.3s ease',
+    marginTop: '1rem',
+  },
+};
