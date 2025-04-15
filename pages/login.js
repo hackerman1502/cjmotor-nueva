@@ -45,11 +45,15 @@ export default function Login() {
                 type="email"
                 placeholder="Correo electrónico"
                 style={styles.input}
+                onFocus={e => e.target.style = { ...styles.input, ...styles.inputFocus }}
+                onBlur={e => e.target.style = { ...styles.input }}
               />
               <input
                 type="password"
                 placeholder="Contraseña"
                 style={styles.input}
+                onFocus={e => e.target.style = { ...styles.input, ...styles.inputFocus }}
+                onBlur={e => e.target.style = { ...styles.input }}
               />
               <button style={styles.button}>Entrar</button>
             </div>
@@ -73,7 +77,7 @@ const styles = {
   content: {
     textAlign: 'center',
     color: '#fff',
-    maxWidth: '400px',
+    maxWidth: '320px', // Más ancho para los inputs
     width: '100%',
   },
   logoWrapper: {
@@ -102,16 +106,17 @@ const styles = {
     cursor: 'pointer',
     fontWeight: 500,
     transition: 'all 0.3s ease',
+    marginTop: '1rem',
   },
   formWrapper: {
-  marginTop: '1rem',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '1rem',
-  width: '100%',
-  maxWidth: '320px', // <- más ancho
-  marginInline: 'auto',
-},
+    marginTop: '1rem',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1rem',
+    width: '100%',
+    maxWidth: '320px',
+    marginInline: 'auto',
+  },
   input: {
     padding: '12px 15px',
     borderRadius: '8px',
@@ -120,6 +125,12 @@ const styles = {
     color: '#fff',
     fontSize: '1rem',
     outline: 'none',
+    transition: 'all 0.3s ease',
+    boxShadow: '0 0 0px transparent',
+  },
+  inputFocus: {
+    border: '1px solid #fff',
+    boxShadow: '0 0 8px rgba(255, 255, 255, 0.3)',
   },
 };
 
