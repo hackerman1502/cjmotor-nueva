@@ -1,7 +1,14 @@
 import Image from 'next/image';
 import Head from 'next/head';
+import { useState } from 'react';
 
 export default function Login() {
+  const [showForm, setShowForm] = useState(false);
+
+  const handleAccessClick = () => {
+    setShowForm(true);
+  };
+
   return (
     <>
       <Head>
@@ -25,8 +32,30 @@ export default function Login() {
           </div>
           <h1 style={styles.title}>Bienvenido a CJMOTOR</h1>
           <p style={styles.subtitle}>Inicia sesión para gestionar tus citas</p>
-          <button style={styles.button}>Acceder</button>
-          <h1 style={styles.title}>Proximamente...</h1>
+
+          {!showForm && (
+            <button style={styles.button} onClick={handleAccessClick}>
+              Acceder
+            </button>
+          )}
+
+          {showForm && (
+            <div style={styles.formWrapper}>
+              <input
+                type="email"
+                placeholder="Correo electrónico"
+                style={styles.input}
+              />
+              <input
+                type="password"
+                placeholder="Contraseña"
+                style={styles.input}
+              />
+              <button style={{ ...styles.button, marginTop: '1rem' }}>
+                Entrar
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </>
@@ -65,8 +94,8 @@ const styles = {
     fontWeight: 300,
   },
   button: {
-    backgroundColor: '#fff', // blanco puro
-    color: '#000', // texto en negro para contraste
+    backgroundColor: '#fff',
+    color: '#000',
     padding: '12px 20px',
     border: 'none',
     borderRadius: '8px',
@@ -75,5 +104,21 @@ const styles = {
     maxWidth: '250px',
     cursor: 'pointer',
     fontWeight: 500,
+    transition: 'all 0.3s ease',
+  },
+  formWrapper: {
+    marginTop: '1rem',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1rem',
+  },
+  input: {
+    padding: '12px 15px',
+    borderRadius: '8px',
+    border: '1px solid #444',
+    backgroundColor: '#111',
+    color: '#fff',
+    fontSize: '1rem',
+    outline: 'none',
   },
 };
