@@ -32,7 +32,7 @@ export default function Login() {
       alert('Credenciales incorrectas o cuenta no confirmada');
       console.error(error);
     } else {
-      router.push('/panel-usuario'); // Redirige al panel del usuario normal
+      router.push('/user-panel'); // Redirige al panel del usuario normal
     }
   };
 
