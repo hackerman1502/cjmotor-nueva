@@ -26,6 +26,7 @@ export default function Login() {
           <h1 style={styles.title}>Bienvenido a CJMOTOR</h1>
           <p style={styles.subtitle}>Inicia sesión para gestionar tus citas</p>
           <button style={styles.button}>Acceder</button>
+          <h1 style={styles.title}>Proximamente...</h1>
         </div>
       </div>
     </>
