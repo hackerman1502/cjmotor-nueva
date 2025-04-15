@@ -65,8 +65,8 @@ const styles = {
     fontWeight: 300,
   },
   button: {
-    backgroundColor: '#e60000',
-    color: '#fff',
+    backgroundColor: '#fff', // blanco puro
+    color: '#000', // texto en negro para contraste
     padding: '12px 20px',
     border: 'none',
     borderRadius: '8px',
@@ -74,8 +74,6 @@ const styles = {
     width: '100%',
     maxWidth: '250px',
     cursor: 'pointer',
-    fontWeight: 400,
+    fontWeight: 500,
   },
 };
-
-
