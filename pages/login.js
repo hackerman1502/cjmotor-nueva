@@ -14,27 +14,29 @@ export default function Login() {
     setShowForm(true);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    if (email === 'admin' && password === 'admin') {
-      router.push('/administrador');
-      return;
-    }
+  if (email === 'admin' && password === 'admin') {
+    router.push('/administrador');
+    return;
+  }
 
-    // Intentamos hacer login con Supabase
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
 
-    if (error) {
-      alert('Credenciales incorrectas o cuenta no confirmada');
-      console.error(error);
-    } else {
-      router.push('/user-panel'); // Redirige al panel del usuario normal
-    }
-  };
+  console.log("DATA:", data);
+  console.log("ERROR:", error);
+
+  if (error) {
+    alert('Error al iniciar sesión: ' + error.message);
+  } else {
+    alert('Login correcto');
+    router.push('/user-panel');
+  }
+};
 
   return (
     <>
