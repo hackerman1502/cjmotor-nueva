@@ -48,6 +48,7 @@ const styles = {
     color: '#fff',            // Texto blanco para contraste
     padding: '20px',
     minHeight: '100vh',
+    fontFamily: "'Poppins', sans-serif", // Fuente Poppins para todo el panel
   },
   header: {
     display: 'flex',
@@ -71,6 +72,6 @@ const styles = {
     borderRadius: '8px',
     backgroundColor: '#fff', // Botones en blanco
     color: '#000',           // Texto negro en los botones
+    fontFamily: "'Poppins', sans-serif", // Fuente Poppins para los botones
   },
 };
-
