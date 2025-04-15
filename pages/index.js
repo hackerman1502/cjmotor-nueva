@@ -84,46 +84,45 @@ export default function Home() {
     setForm({ ...form, fecha: e.target.value, hora: "" }); // Limpiar la hora al cambiar la fecha
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    if (!form.nombre || !form.telefono || !form.fecha || !form.servicio || !form.hora) return;
+  if (!form.nombre || !form.telefono || !form.fecha || !form.servicio || !form.hora) return;
 
-    try {
-      // Guardar cita en Supabase
-      const { data, error } = await supabase
-        .from('citas')
-        .insert([
-          {
-            nombre: form.nombre,
-            telefono: form.telefono,
-            fecha: form.fecha,
-            hora: form.hora,
-            servicio: form.servicio,
-            comentario: form.comentario
-          }
-        ]);
+  try {
+    const { error } = await supabase
+      .from('citas')
+      .insert([
+        {
+          nombre: form.nombre,
+          telefono: form.telefono,
+          fecha: form.fecha,
+          hora: form.hora,
+          servicio: form.servicio,
+          comentario: form.comentario,
+        },
+      ]);
 
-      if (error) {
-        alert("Error al guardar la cita");
-        console.error("Error de Supabase:", error);
-      } else {
-        alert("Cita guardada correctamente");
-        setForm({
-          nombre: "",
-          telefono: "",
-          fecha: "",
-          servicio: "",
-          comentario: "",
-          hora: "",
-        });
-        fetchCitas(); // Volver a obtener las citas actualizadas
-      }
-    } catch (error) {
-      alert("Hubo un error al enviar la cita");
-      console.error(error);
+    if (error) {
+      alert("Error al guardar la cita");
+      console.error("Error de Supabase:", error);
+    } else {
+      alert("Cita guardada correctamente");
+      setForm({
+        nombre: "",
+        telefono: "",
+        fecha: "",
+        servicio: "",
+        comentario: "",
+        hora: "",
+      });
+      fetchCitas(); // Recarga las citas actualizadas
     }
-  };
+  } catch (error) {
+    alert("Hubo un error al enviar la cita");
+    console.error(error);
+  }
+};
 
   const isFormValid = () => {
     return form.nombre && form.telefono && form.fecha && form.hora && form.servicio;
