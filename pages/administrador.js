@@ -1,77 +1,137 @@
 import { Button } from "@mui/material";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import { supabase } from "../lib/supabaseClient";
+
+const styles = {
+  container: {
+    padding: "20px",
+    backgroundColor: "black",
+    color: "white",
+    minHeight: "100vh",
+  },
+  header: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "20px",
+    flexWrap: "wrap",
+  },
+  logo: {
+    width: "130px",
+    height: "auto",
+  },
+  imgSmall: {
+    width: "60px",
+    height: "auto",
+  },
+  title: {
+    fontSize: "18px",
+    fontWeight: "300",
+    fontFamily: "'Roboto', sans-serif",
+    marginTop: "10px",
+    letterSpacing: "1px",
+    textAlign: "center",
+  },
+  button: {
+    backgroundColor: "white",
+    color: "black",
+    marginTop: "10px",
+    marginRight: "10px",
+  },
+};
 
 export default function AdminPanel() {
   const router = useRouter();
+  const [citas, setCitas] = useState([]);
+
+  useEffect(() => {
+    const fetchCitas = async () => {
+      const { data, error } = await supabase.from("citas").select("*");
+      if (!error) setCitas(data);
+    };
+    fetchCitas();
+  }, []);
+
+  const exportarCSV = (citas) => {
+    const contraseña = prompt("Introduce la contraseña de administrador:");
+
+    if (contraseña !== "admin123") {
+      alert("Contraseña incorrecta");
+      return;
+    }
+
+    if (!citas.length) {
+      alert("No hay citas para exportar.");
+      return;
+    }
+
+    const encabezado = ["Nombre", "Teléfono", "Fecha", "Hora", "Servicio", "Comentario"];
+    const filas = citas.map((cita) => [
+      cita.nombre,
+      cita.telefono,
+      cita.fecha,
+      cita.hora,
+      cita.servicio,
+      cita.comentario?.replace(/\n/g, " ") || "",
+    ]);
+
+    const csvContent =
+      [encabezado, ...filas]
+        .map((fila) => fila.map((campo) => `"${campo}"`).join(","))
+        .join("\n");
+
+    const fechaActual = new Date().toISOString().split("T")[0];
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.setAttribute("href", url);
+    link.setAttribute("download", `citas-${fechaActual}.csv`);
+    link.click();
+  };
 
   return (
     <div style={styles.container}>
       <div style={styles.header}>
-        <img src="/logo-cjmotor.png" alt="Logo" style={styles.logo} />
+        <img src="/lambo.png" alt="Lambo" style={styles.imgSmall} />
+        <div>
+          <img src="/logo-cjmotor.png" alt="Logo CJ MOTOR" style={styles.logo} />
+          <p style={styles.title}>Panel de Administración</p>
+        </div>
+        <img src="/neumaticos.png" alt="Neumáticos" style={styles.imgSmall} />
       </div>
 
-      <div style={styles.buttonWrapper}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
         <Button
           variant="contained"
-          color="primary"
+          style={styles.button}
           onClick={() => router.push("/admin-panel")}
-          style={styles.button}
         >
-          Acceder al Panel
+          Ver citas
         </Button>
-
         <Button
           variant="contained"
-          color="primary"
-          onClick={() => router.push("/citas-panel")}
           style={styles.button}
+          onClick={() => router.push("/admin-citas")}
         >
-          Ver Citas
+          Gestionar citas
         </Button>
-
         <Button
           variant="contained"
-          color="primary"
+          style={styles.button}
           onClick={() => router.push("/")}
-          style={styles.button}
         >
-          Registro Cita
+          Registro cita
+        </Button>
+        <Button
+          variant="contained"
+          style={styles.button}
+          onClick={() => exportarCSV(citas)}
+        >
+          Exportar citas CSV
         </Button>
       </div>
     </div>
   );
 }
-
-const styles = {
-  container: {
-    backgroundColor: '#000',  // Fondo negro igual que en otras páginas
-    color: '#fff',            // Texto blanco para contraste
-    padding: '20px',
-    minHeight: '100vh',
-    fontFamily: "'Poppins', sans-serif", // Fuente Poppins para todo el panel
-  },
-  header: {
-    display: 'flex',
-    justifyContent: 'center',
-    marginBottom: '40px',
-  },
-  logo: {
-    width: '130px',
-    height: 'auto',
-  },
-  buttonWrapper: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '20px',
-    alignItems: 'center',
-  },
-  button: {
-    width: '250px',  // Ancho fijo para los botones
-    fontSize: '16px',
-    padding: '12px',
-    borderRadius: '8px',
-    backgroundColor: '#fff', // Botones en blanco
-    color: '#000',           // Texto negro en los botones
-    fontFamily: "'Poppins', sans-serif", // Fuente Poppins para los botones
-  },
-};
