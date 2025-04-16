@@ -230,7 +230,7 @@ export default function CitasPanel() {
                             style={{ backgroundColor: "black", color: "white" }}
                             onClick={() => handleMarkCompleted(cita.id)}
                           >
-                            Marcar como Completada
+                            Completada
                           </Button>
                         )}
                       </div>
