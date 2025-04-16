@@ -13,31 +13,30 @@ export default function Login() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-useEffect(() => {
-  const checkSession = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user) {
-      setUser(session.user);
-      setShowForm(false); // Oculta el formulario si ya está logueado
-      router.push("/user-panel"); // 🚀 Esto faltaba para redirigir
-    } else {
-      setUser(null);
-    }
-    setLoading(false);
-  };
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setUser(session.user);
+        setShowForm(false); // Oculta el formulario si ya está logueado
+        router.push("/user-panel"); // 🚀 Esto faltaba para redirigir
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    };
 
-  checkSession();
-
-  // Detecta cambios en sesión por si vuelve atrás
-  const { data: listener } = supabase.auth.onAuthStateChange(() => {
     checkSession();
-  });
 
-  return () => {
-    listener.subscription.unsubscribe();
-  };
-}, []);
+    // Detecta cambios en sesión por si vuelve atrás
+    const { data: listener } = supabase.auth.onAuthStateChange(() => {
+      checkSession();
+    });
 
+    return () => {
+      listener.subscription.unsubscribe();
+    };
+  }, []);
 
   const handleAccessClick = () => {
     setShowForm(true);
@@ -45,11 +44,6 @@ useEffect(() => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (email === 'admin' && password === 'admin') {
-      router.push('/administrador');
-      return;
-    }
 
     let data, error;
 
@@ -69,7 +63,25 @@ useEffect(() => {
       alert('Credenciales incorrectas o cuenta no confirmada');
       console.error(error);
     } else {
-      router.push('/user-panel');
+      // Verificar si el usuario tiene el rol de admin
+      const { data: userProfile, error: profileError } = await supabase
+        .from('user_profiles')
+        .select('role')
+        .eq('user_id', data.user.id)
+        .single();
+
+      if (profileError) {
+        console.error('Error al obtener el perfil de usuario:', profileError);
+        alert('No se pudo obtener el perfil del usuario.');
+        return;
+      }
+
+      // Si el rol es 'admin', redirigir al panel de administración
+      if (userProfile?.role === 'admin') {
+        router.push('/administrador');
+      } else {
+        router.push('/user-panel');
+      }
     }
   };
 
