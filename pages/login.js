@@ -10,6 +10,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [isRegistering, setIsRegistering] = useState(false);
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
@@ -17,10 +18,9 @@ export default function Login() {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
         setUser(session.user);
-        router.push('/user-panel');
       }
+      setLoading(false);
     };
-
     checkSession();
   }, []);
 
@@ -64,6 +64,14 @@ export default function Login() {
     setShowForm(false);
   };
 
+  if (loading) {
+    return (
+      <div style={{ color: 'white', textAlign: 'center', marginTop: '50px' }}>
+        Cargando...
+      </div>
+    );
+  }
+
   return (
     <>
       <Head>
@@ -90,20 +98,22 @@ export default function Login() {
             {isRegistering ? 'Regístrate para gestionar tus citas' : 'Inicia sesión para gestionar tus citas'}
           </p>
 
-          {!showForm && (
-            <>
-              <button style={styles.button} onClick={handleAccessClick}>
-                Acceder
-              </button>
-              {user && (
-                <button style={{ ...styles.button, backgroundColor: '#d9534f', color: '#fff' }} onClick={handleLogout}>
-                  Cerrar sesión
-                </button>
-              )}
-            </>
+          {!showForm && !user && (
+            <button style={styles.button} onClick={handleAccessClick}>
+              Acceder
+            </button>
           )}
 
-          {showForm && (
+          {user && (
+            <button
+              style={{ ...styles.button, backgroundColor: '#d9534f', color: '#fff' }}
+              onClick={handleLogout}
+            >
+              Cerrar sesión
+            </button>
+          )}
+
+          {showForm && !user && (
             <form style={styles.formWrapper} onSubmit={handleSubmit}>
               <input
                 type="text"
