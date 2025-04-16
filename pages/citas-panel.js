@@ -1,7 +1,29 @@
-// ...los mismos imports de antes
-import { TextField } from "@mui/material";
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  Typography,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
+} from "@mui/material";
+import { useRouter } from "next/router";
+import { createClient } from "@supabase/supabase-js";
 
-// ...supabase config igual
+// Configuración de Supabase
+const supabaseUrl = "https://lslvykkxyqtkcyrxxzey.supabase.co";
+const supabaseKey =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxzbHZ5a2t4eXF0a2N5cnh4emV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2NTAwODQsImV4cCI6MjA2MDIyNjA4NH0.JnVxWZWB4Lbod01G23PSNzq6bd6N-DCXXxZeLci8Oc8";
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function CitasPanel() {
   const [citas, setCitas] = useState([]);
@@ -35,89 +57,60 @@ export default function CitasPanel() {
     fetchCitas();
   }, [filter, estadoFilter]);
 
-  const handleChange = (id, campo, valor) => {
-    setCitas((prevCitas) =>
-      prevCitas.map((cita) =>
-        cita.id === id ? { ...cita, [campo]: valor } : cita
-      )
-    );
-  };
-
-  const handleUpdate = async (id) => {
-    const cita = citas.find((c) => c.id === id);
-
-    const { error } = await supabase
-      .from("citas")
-      .update({
-        nombre: cita.nombre,
-        telefono: cita.telefono,
-        servicio: cita.servicio,
-        fecha: cita.fecha,
-        hora: cita.hora,
-        estado: cita.estado,
-      })
-      .eq("id", id);
-
-    if (error) {
-      console.error("Error al actualizar cita:", error);
-      alert("No se pudo actualizar la cita");
-    } else {
-      alert("Cita actualizada correctamente");
-      fetchCitas();
-    }
-  };
-
-  const handleMarkCompleted = async (id) => {
+  const handleUpdate = async (id, nuevaFecha, nuevaHora) => {
     try {
-      const { data: cita, error: fetchError } = await supabase
+      const { error } = await supabase
         .from("citas")
-        .select("*")
-        .eq("id", id)
-        .single();
-
-      if (fetchError) {
-        console.error("Error al obtener la cita:", fetchError);
-        return;
-      }
-
-      const { error: insertError } = await supabase
-        .from("citas_completadas")
-        .insert([{ ...cita, estado: "Completada" }]);
-
-      if (insertError) {
-        console.error("Error al insertar en citas_completadas:", insertError);
-        return;
-      }
-
-      const { error: deleteError } = await supabase
-        .from("citas")
-        .delete()
+        .update({ fecha: nuevaFecha, hora: nuevaHora })
         .eq("id", id);
 
-      if (deleteError) {
-        console.error("Error al eliminar la cita:", deleteError);
-        return;
+      if (error) {
+        console.error("Error al actualizar cita:", error);
+        alert("Hubo un error al guardar los cambios.");
+      } else {
+        alert("Cita actualizada correctamente.");
+        fetchCitas();
       }
-
-      fetchCitas();
-      alert("Cita marcada como completada y movida correctamente.");
-    } catch (error) {
-      console.error("Error inesperado:", error);
-      alert("Hubo un problema al procesar la cita.");
+    } catch (err) {
+      console.error("Error inesperado:", err);
+      alert("Algo fue mal al actualizar la cita.");
     }
   };
 
   return (
-    <div style={{ backgroundColor: "black", color: "white", padding: "20px", minHeight: "100vh" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+    <div
+      style={{
+        backgroundColor: "black",
+        color: "white",
+        padding: "20px",
+        minHeight: "100vh",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "10px",
+        }}
+      >
         <Button
           variant="contained"
           onClick={() => router.push("/administrador")}
-          style={{ backgroundColor: "white", color: "black", border: "1px solid #ccc", marginRight: "10px" }}
+          style={{
+            backgroundColor: "white",
+            color: "black",
+            border: "1px solid #ccc",
+            marginRight: "10px",
+          }}
         >
           Atrás
         </Button>
-        <img src="/logo-cjmotor.png" alt="Logo" style={{ width: "130px", height: "auto" }} />
+        <img
+          src="/logo-cjmotor.png"
+          alt="Logo"
+          style={{ width: "130px", height: "auto" }}
+        />
       </div>
 
       <Card style={{ backgroundColor: "white", color: "black", padding: "20px" }}>
@@ -129,7 +122,11 @@ export default function CitasPanel() {
           <div style={{ display: "flex", gap: "20px", marginBottom: "20px" }}>
             <FormControl variant="outlined" style={{ width: "200px", backgroundColor: "white" }}>
               <InputLabel>Filtrar por Estado</InputLabel>
-              <Select value={estadoFilter} onChange={(e) => setEstadoFilter(e.target.value)} label="Filtrar por Estado">
+              <Select
+                value={estadoFilter}
+                onChange={(e) => setEstadoFilter(e.target.value)}
+                label="Filtrar por Estado"
+              >
                 <MenuItem value="">Todos</MenuItem>
                 <MenuItem value="Pendiente">Pendiente</MenuItem>
                 <MenuItem value="Completada">Completada</MenuItem>
@@ -138,7 +135,11 @@ export default function CitasPanel() {
 
             <FormControl variant="outlined" style={{ width: "200px", backgroundColor: "white" }}>
               <InputLabel>Ordenar por</InputLabel>
-              <Select value={filter} onChange={(e) => setFilter(e.target.value)} label="Ordenar por">
+              <Select
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+                label="Ordenar por"
+              >
                 <MenuItem value="fecha">Fecha</MenuItem>
                 <MenuItem value="estado">Estado</MenuItem>
               </Select>
@@ -161,47 +162,42 @@ export default function CitasPanel() {
               <TableBody>
                 {citas.map((cita) => (
                   <TableRow key={cita.id}>
+                    <TableCell>{cita.nombre}</TableCell>
+                    <TableCell>{cita.telefono}</TableCell>
+                    <TableCell>{cita.servicio}</TableCell>
                     <TableCell>
-                      <TextField value={cita.nombre} onChange={(e) => handleChange(cita.id, "nombre", e.target.value)} />
+                      <input
+                        type="date"
+                        value={cita.fecha}
+                        onChange={(e) => {
+                          const nuevasCitas = citas.map((c) =>
+                            c.id === cita.id ? { ...c, fecha: e.target.value } : c
+                          );
+                          setCitas(nuevasCitas);
+                        }}
+                      />
                     </TableCell>
                     <TableCell>
-                      <TextField value={cita.telefono} onChange={(e) => handleChange(cita.id, "telefono", e.target.value)} />
+                      <input
+                        type="time"
+                        value={cita.hora}
+                        onChange={(e) => {
+                          const nuevasCitas = citas.map((c) =>
+                            c.id === cita.id ? { ...c, hora: e.target.value } : c
+                          );
+                          setCitas(nuevasCitas);
+                        }}
+                      />
                     </TableCell>
-                    <TableCell>
-                      <TextField value={cita.servicio} onChange={(e) => handleChange(cita.id, "servicio", e.target.value)} />
-                    </TableCell>
-                    <TableCell>
-                      <TextField type="date" value={cita.fecha} onChange={(e) => handleChange(cita.id, "fecha", e.target.value)} />
-                    </TableCell>
-                    <TableCell>
-                      <TextField type="time" value={cita.hora} onChange={(e) => handleChange(cita.id, "hora", e.target.value)} />
-                    </TableCell>
-                    <TableCell>
-                      <Select
-                        value={cita.estado}
-                        onChange={(e) => handleChange(cita.id, "estado", e.target.value)}
-                      >
-                        <MenuItem value="Pendiente">Pendiente</MenuItem>
-                        <MenuItem value="Completada">Completada</MenuItem>
-                      </Select>
-                    </TableCell>
+                    <TableCell>{cita.estado}</TableCell>
                     <TableCell>
                       <Button
                         variant="contained"
-                        onClick={() => handleUpdate(cita.id)}
-                        style={{ marginBottom: "8px", backgroundColor: "#007BFF", color: "white" }}
+                        style={{ backgroundColor: "green", color: "white" }}
+                        onClick={() => handleUpdate(cita.id, cita.fecha, cita.hora)}
                       >
                         Guardar
                       </Button>
-                      {cita.estado === "Pendiente" && (
-                        <Button
-                          variant="contained"
-                          style={{ backgroundColor: "black", color: "white" }}
-                          onClick={() => handleMarkCompleted(cita.id)}
-                        >
-                          Marcar como Completada
-                        </Button>
-                      )}
                     </TableCell>
                   </TableRow>
                 ))}
