@@ -25,63 +25,62 @@ export default function MisCitas() {
   const [citas, setCitas] = useState([]);
   const router = useRouter();
 
-useEffect(() => {
-  const fetchCitas = async () => {
-    const { data: userData, error: userError } = await supabase.auth.getUser();
+  useEffect(() => {
+    const fetchCitas = async () => {
+      const { data: userData, error: userError } = await supabase.auth.getUser();
 
-    if (userError || !userData?.user) {
-      alert("Tienes que estar logueado para ver tus citas.");
-      router.push("/login");
-      return;
-    }
+      if (userError || !userData?.user) {
+        alert("Tienes que estar logueado para ver tus citas.");
+        router.push("/login");
+        return;
+      }
 
-    const userId = userData.user.id;
-    console.log("ID del usuario logueado:", userId); // DEBUG
+      const userId = userData.user.id;
+      console.log("ID del usuario logueado:", userId); // DEBUG
 
-    const { data, error } = await supabase
-      .from("citas")
-      .select("*")
-      .eq("usuario_id", userId);
+      const { data, error } = await supabase
+        .from("citas")
+        .select("*")
+        .eq("usuario_id", userId);
 
-    if (error) {
-      console.error("Error al obtener citas:", error);
-    } else {
-      console.log("Citas recuperadas:", data); // DEBUG
-      setCitas(data);
+      if (error) {
+        console.error("Error al obtener citas:", error);
+      } else {
+        console.log("Citas recuperadas:", data); // DEBUG
+        setCitas(data);
+      }
+    };
+
+    fetchCitas();
+  }, []);
+
+  const handleDeleteCita = async (id) => {
+    // Confirmación antes de eliminar
+    const confirmDelete = window.confirm("¿Estás seguro de que quieres eliminar esta cita?");
+    if (!confirmDelete) return;
+
+    try {
+      // Intento de eliminación de la cita en la base de datos
+      const { data, error } = await supabase
+        .from("citas")
+        .delete()
+        .eq("id", id); // Se asegura de que la cita con el id especificado se elimine
+
+      // Si hay un error en la eliminación, lo mostramos
+      if (error) {
+        console.error("Error al eliminar la cita:", error);
+        alert("Hubo un error al eliminar la cita.");
+      } else {
+        // Si la cita fue eliminada correctamente, actualizamos el estado local
+        console.log("Cita eliminada correctamente", data);
+        setCitas((prevCitas) => prevCitas.filter((cita) => cita.id !== id));
+        alert("Cita eliminada correctamente.");
+      }
+    } catch (error) {
+      console.error("Hubo un error al eliminar la cita:", error);
+      alert("Hubo un error al eliminar la cita.");
     }
   };
-
-  fetchCitas();
-}, []);
-
- const handleDeleteCita = async (id) => {
-  // Confirmación antes de eliminar
-  const confirmDelete = window.confirm("¿Estás seguro de que quieres eliminar esta cita?");
-  if (!confirmDelete) return;
-
-  try {
-    // Intento de eliminación de la cita en la base de datos
-    const { data, error } = await supabase
-      .from('citas')
-      .delete()
-      .eq('id', id); // Se asegura de que la cita con el id especificado se elimine
-
-    // Si hay un error en la eliminación, lo mostramos
-    if (error) {
-      console.error("Error al eliminar la cita:", error);
-      alert("Hubo un error al eliminar la cita.");
-    } else {
-      // Si la cita fue eliminada correctamente, actualizamos el estado local
-      console.log("Cita eliminada correctamente", data);
-      setCitas((prevCitas) => prevCitas.filter((cita) => cita.id !== id));
-      alert("Cita eliminada correctamente.");
-    }
-  } catch (error) {
-    console.error("Hubo un error al eliminar la cita:", error);
-    alert("Hubo un error al eliminar la cita.");
-  }
-};
-
 
   return (
     <div style={{ backgroundColor: "black", color: "white", padding: "20px", minHeight: "100vh" }}>
@@ -117,6 +116,7 @@ useEffect(() => {
                     <TableCell><strong>Hora</strong></TableCell>
                     <TableCell><strong>Servicio</strong></TableCell>
                     <TableCell><strong>Estado</strong></TableCell>
+                    <TableCell><strong>Acciones</strong></TableCell> {/* Nueva columna para botones */}
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -126,21 +126,21 @@ useEffect(() => {
                       <TableCell>{cita.hora}</TableCell>
                       <TableCell>{cita.servicio}</TableCell>
                       <TableCell>{cita.estado}</TableCell>
+                      <TableCell>
+                        <Button
+                          variant="contained"
+                          color="error"
+                          onClick={() => handleDeleteCita(cita.id)} // Llamar a la función con el id correspondiente
+                        >
+                          Eliminar
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             </TableContainer>
           )}
-            <div style={{ marginTop: "10px", display: "flex", justifyContent: "flex-end" }}>
-                <Button
-                  variant="contained"
-                  color="error"
-                  onClick={() => handleDeleteCita(cita.id)}
-                >
-                  Eliminar
-                </Button>
-              </div>
         </CardContent>
       </Card>
     </div>
