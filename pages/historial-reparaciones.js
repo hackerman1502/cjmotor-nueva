@@ -39,7 +39,7 @@ export default function HistorialReparaciones() {
       console.log("ID del usuario logueado:", userId); // DEBUG
 
       const { data, error } = await supabase
-        .from("citas")
+        .from("citas_completadas")
         .select("*")
         .eq("usuario_id", userId)
         .eq("estado", "completada"); // Filtrar por estado 'completada'
