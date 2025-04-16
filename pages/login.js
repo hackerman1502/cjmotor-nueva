@@ -61,18 +61,6 @@ export default function Login() {
       return;
     }
 
-    // Insertar el rol por defecto (usuario normal)
-    const userId = data.user?.id ?? data.session?.user?.id;
-    if (userId) {
-      const { error: insertError } = await supabase
-        .from('user_profiles')
-        .insert([{ user_id: userId, role: 'user' }]);
-
-      if (insertError) {
-        console.error('Error insertando perfil:', insertError);
-      }
-    }
-
     // Redirigir tras el registro
     router.push('/user-panel');
     return;
