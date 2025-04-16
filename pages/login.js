@@ -8,52 +8,35 @@ export default function Login() {
   const [showForm, setShowForm] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isRegistering, setIsRegistering] = useState(false);
   const router = useRouter();
 
   const handleAccessClick = () => {
     setShowForm(true);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-  
-    let data, error;
-  
-    if (isRegistering) {
-      // Registro
-      ({ data, error } = await supabase.auth.signUp({
-        email,
-        password,
-      }));
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-      if (error) {
-        alert(`Hubo un problema al registrar el usuario. Error: ${error.message}`);
-        console.error('Error en el registro:', error);
-      } else {
-        alert('¡Registro exitoso! Ahora puedes iniciar sesión.');
-        setIsRegistering(false); // Cambiar a la vista de login
-      }
-    } else {
-      // Inicio de sesión
-      ({ data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      }));
+  if (email === 'admin' && password === 'admin') {
+    router.push('/administrador');
+    return;
+  }
 
-      if (error) {
-        alert('Credenciales incorrectas o cuenta no confirmada');
-        console.error('Error en el login:', error);
-      } else {
-        // Si es admin, redirige a administrador
-        if (email === 'admin' && password === 'admin') {
-          router.push('/administrador');
-        } else {
-          router.push('/user-panel');
-        }
-      }
-    }
-  };
+  const { data, error } = await supabase.auth.signInWithPassword({
+  email: email.trim(),
+  password,
+});
+
+  console.log("DATA:", data);
+  console.log("ERROR:", error);
+
+  if (error) {
+    alert('Error al iniciar sesión: ' + error.message);
+  } else {
+    alert('Login correcto');
+    router.push('/user-panel');
+  }
+};
 
   return (
     <>
@@ -77,9 +60,7 @@ export default function Login() {
             />
           </div>
           <h1 style={styles.title}>Bienvenido a CJMOTOR</h1>
-          <p style={styles.subtitle}>
-            {isRegistering ? 'Regístrate para gestionar tus citas' : 'Inicia sesión para gestionar tus citas'}
-          </p>
+          <p style={styles.subtitle}>Inicia sesión para gestionar tus citas</p>
 
           {!showForm && (
             <button style={styles.button} onClick={handleAccessClick}>
@@ -91,7 +72,7 @@ export default function Login() {
             <form style={styles.formWrapper} onSubmit={handleSubmit}>
               <input
                 type="text"
-                placeholder="Correo electrónico"
+                placeholder="Correo electrónico o admin"
                 style={styles.input}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -103,16 +84,7 @@ export default function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
-              <button type="submit" style={styles.button}>
-                {isRegistering ? 'Registrarse' : 'Entrar'}
-              </button>
-              <button
-                type="button"
-                style={{ ...styles.button, backgroundColor: '#444', color: '#fff' }}
-                onClick={() => setIsRegistering(!isRegistering)}
-              >
-                {isRegistering ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Regístrate'}
-              </button>
+              <button type="submit" style={styles.button}>Entrar</button>
             </form>
           )}
         </div>
