@@ -19,6 +19,7 @@ useEffect(() => {
     if (session?.user) {
       setUser(session.user);
       setShowForm(false); // Oculta el formulario si ya está logueado
+      router.push("/user-panel"); // 🚀 Esto faltaba para redirigir
     } else {
       setUser(null);
     }
@@ -27,7 +28,7 @@ useEffect(() => {
 
   checkSession();
 
-  // Esto permite que detecte el usuario si vuelves atrás desde otra ruta
+  // Detecta cambios en sesión por si vuelve atrás
   const { data: listener } = supabase.auth.onAuthStateChange(() => {
     checkSession();
   });
@@ -36,6 +37,7 @@ useEffect(() => {
     listener.subscription.unsubscribe();
   };
 }, []);
+
 
   const handleAccessClick = () => {
     setShowForm(true);
