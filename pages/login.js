@@ -13,16 +13,29 @@ export default function Login() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        setUser(session.user);
-      }
-      setLoading(false);
-    };
+useEffect(() => {
+  const checkSession = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      setUser(session.user);
+      setShowForm(false); // Oculta el formulario si ya está logueado
+    } else {
+      setUser(null);
+    }
+    setLoading(false);
+  };
+
+  checkSession();
+
+  // Esto permite que detecte el usuario si vuelves atrás desde otra ruta
+  const { data: listener } = supabase.auth.onAuthStateChange(() => {
     checkSession();
-  }, []);
+  });
+
+  return () => {
+    listener.subscription.unsubscribe();
+  };
+}, []);
 
   const handleAccessClick = () => {
     setShowForm(true);
