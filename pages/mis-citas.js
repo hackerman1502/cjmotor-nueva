@@ -25,32 +25,34 @@ export default function MisCitas() {
   const [citas, setCitas] = useState([]);
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchCitas = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+useEffect(() => {
+  const fetchCitas = async () => {
+    const { data: userData, error: userError } = await supabase.auth.getUser();
 
-      if (!user) {
-        alert("Tienes que estar logueado para ver tus citas.");
-        router.push("/login");
-        return;
-      }
+    if (userError || !userData?.user) {
+      alert("Tienes que estar logueado para ver tus citas.");
+      router.push("/login");
+      return;
+    }
 
-      const { data, error } = await supabase
-        .from("citas")
-        .select("*")
-        .eq("usuario_id", user.id);
+    const userId = userData.user.id;
+    console.log("ID del usuario logueado:", userId); // DEBUG
 
-      if (error) {
-        console.error("Error al obtener citas:", error);
-      } else {
-        setCitas(data);
-      }
-    };
+    const { data, error } = await supabase
+      .from("citas")
+      .select("*")
+      .eq("usuario_id", userId);
 
-    fetchCitas();
-  }, []);
+    if (error) {
+      console.error("Error al obtener citas:", error);
+    } else {
+      console.log("Citas recuperadas:", data); // DEBUG
+      setCitas(data);
+    }
+  };
+
+  fetchCitas();
+}, []);
 
   return (
     <div style={{ backgroundColor: "black", color: "white", padding: "20px", minHeight: "100vh" }}>
