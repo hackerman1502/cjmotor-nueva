@@ -39,23 +39,7 @@ const styles = {
   },
 };
 
-export default function AdminPanel() {
-  const router = useRouter();
 
-    // Función para redirigir a la página principal
-    const handleGoHome = () => {
-      router.push('/login');  // Redirige a la página principal
-    };
-  const [citas, setCitas] = useState([]);
-
-  useEffect(() => {
-    const fetchCitas = async () => {
-      const { data, error } = await supabase.from("citas").select("*");
-      if (!error) setCitas(data);
-    };
-
-    fetchCitas();
-  }, []);
 
   const exportarCSV = () => {
     if (!citas.length) {
