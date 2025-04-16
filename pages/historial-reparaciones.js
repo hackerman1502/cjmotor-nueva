@@ -25,35 +25,38 @@ export default function HistorialReparaciones() {
   const [reparaciones, setReparaciones] = useState([]);
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchReparaciones = async () => {
-      const { data: userData, error: userError } = await supabase.auth.getUser();
+useEffect(() => {
+  const fetchReparaciones = async () => {
+    const { data: userData, error: userError } = await supabase.auth.getUser();
 
-      if (userError || !userData?.user) {
-        alert("Tienes que estar logueado para ver tu historial de reparaciones.");
-        router.push("/login");
-        return;
-      }
+    if (userError || !userData?.user) {
+      alert("Tienes que estar logueado para ver tu historial de reparaciones.");
+      router.push("/login");
+      return;
+    }
 
-      const userId = userData.user.id;
-      console.log("ID del usuario logueado:", userId); // DEBUG
+    const userId = userData.user.id;
+    console.log("ID del usuario logueado:", userId); // DEBUG
 
-      const { data, error } = await supabase
-        .from("citas_completadas")
-        .select("*")
-        .eq("usuario_id", userId)
-        .eq("estado", "completada"); // Filtrar por estado 'completada'
+    const { data, error } = await supabase
+      .from("citas")
+      .select("*")
+      .eq("usuario_id", userId)
+      .eq("estado", "completada"); // Filtrar por estado 'completada'
 
-      if (error) {
-        console.error("Error al obtener reparaciones:", error);
-      } else {
-        console.log("Reparaciones recuperadas:", data); // DEBUG
-        setReparaciones(data);
-      }
-    };
+    // Imprime los resultados de la consulta
+    console.log("Reparaciones recuperadas:", data); // DEBUG
 
-    fetchReparaciones();
-  }, []);
+    if (error) {
+      console.error("Error al obtener reparaciones:", error);
+    } else {
+      setReparaciones(data);
+    }
+  };
+
+  fetchReparaciones();
+}, []);
+
 
   return (
     <div style={{ backgroundColor: "black", color: "white", padding: "20px", minHeight: "100vh" }}>
