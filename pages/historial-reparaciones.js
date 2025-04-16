@@ -46,7 +46,7 @@ useEffect(() => {
     if (error) {
       console.error("Error al obtener citas completadas:", error);
     } else {
-      setCitasCompletadas(data); // Establecer las citas completadas en el estado
+      setReparaciones(data);  // Establecer las citas completadas en el estado
     }
   };
 
