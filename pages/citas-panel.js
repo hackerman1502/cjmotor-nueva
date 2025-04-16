@@ -17,7 +17,8 @@ import {
   FormControl,
 } from "@mui/material";
 import { useRouter } from "next/router";
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "../lib/supabaseClient";
+
 
 // Supabase config
 const supabaseUrl = "https://lslvykkxyqtkcyrxxzey.supabase.co";
@@ -100,20 +101,28 @@ const handleMarkCompleted = async (id) => {
     // Obtener el usuario_id del usuario logueado
     const usuario_id = userData.user.id;
 
-    // Insertar la cita completada con el usuario_id correcto
-    const { error: insertError } = await supabase
-      .from("citas_completadas")
-      .insert([
-        {
-          nombre: cita.nombre,
-          telefono: cita.telefono,
-          servicio: cita.servicio,
-          fecha: cita.fecha,
-          hora: cita.hora,
-          estado: "Completada",
-          usuario_id: usuario_id, // Asignamos el usuario_id del usuario logueado
-        },
-      ]);
+    // Obtenemos el usuario actual antes de insertar
+const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+if (userError || !user) {
+  console.error("Error al obtener el usuario:", userError);
+  alert("No se pudo identificar el usuario.");
+  return;
+}
+
+const { error: insertError } = await supabase
+  .from("citas_completadas")
+  .insert([
+    {
+      nombre: cita.nombre,
+      telefono: cita.telefono,
+      servicio: cita.servicio,
+      fecha: cita.fecha,
+      hora: cita.hora,
+      estado: "Completada",
+      usuario_id: user.id, // 👈 este es el valor correcto ahora
+    },
+  ]);
 
     if (insertError) {
       console.error("Error al insertar en citas_completadas:", insertError);
