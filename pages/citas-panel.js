@@ -219,7 +219,7 @@ export default function CitasPanel() {
                       <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                         <Button
                           variant="contained"
-                          style={{ backgroundColor: "green", color: "white" }}
+                          style={{ backgroundColor: "black", color: "white" }}
                           onClick={() => handleUpdate(cita.id, cita.fecha, cita.hora)}
                         >
                           Guardar
