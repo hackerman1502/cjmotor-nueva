@@ -19,10 +19,9 @@ import {
 import { useRouter } from "next/router";
 import { createClient } from "@supabase/supabase-js";
 
-// Configuración de Supabase
+// Supabase config
 const supabaseUrl = "https://lslvykkxyqtkcyrxxzey.supabase.co";
-const supabaseKey =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxzbHZ5a2t4eXF0a2N5cnh4emV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2NTAwODQsImV4cCI6MjA2MDIyNjA4NH0.JnVxWZWB4Lbod01G23PSNzq6bd6N-DCXXxZeLci8Oc8";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxzbHZ5a2t4eXF0a2N5cnh4emV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2NTAwODQsImV4cCI6MjA2MDIyNjA4NH0.JnVxWZWB4Lbod01G23PSNzq6bd6N-DCXXxZeLci8Oc8";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function CitasPanel() {
@@ -77,40 +76,66 @@ export default function CitasPanel() {
     }
   };
 
+  const handleMarkCompleted = async (id) => {
+    try {
+      const { data: cita, error: fetchError } = await supabase
+        .from("citas")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (fetchError) {
+        console.error("Error al obtener la cita:", fetchError);
+        return;
+      }
+
+      const { error: insertError } = await supabase
+        .from("citas_completadas")
+        .insert([
+          {
+            nombre: cita.nombre,
+            telefono: cita.telefono,
+            servicio: cita.servicio,
+            fecha: cita.fecha,
+            hora: cita.hora,
+            estado: "Completada",
+          },
+        ]);
+
+      if (insertError) {
+        console.error("Error al insertar en citas_completadas:", insertError);
+        return;
+      }
+
+      const { error: deleteError } = await supabase
+        .from("citas")
+        .delete()
+        .eq("id", id);
+
+      if (deleteError) {
+        console.error("Error al eliminar la cita:", deleteError);
+        return;
+      }
+
+      fetchCitas();
+      alert("Cita marcada como completada y movida correctamente.");
+    } catch (error) {
+      console.error("Error inesperado:", error);
+      alert("Hubo un problema al procesar la cita.");
+    }
+  };
+
   return (
-    <div
-      style={{
-        backgroundColor: "black",
-        color: "white",
-        padding: "20px",
-        minHeight: "100vh",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "10px",
-        }}
-      >
+    <div style={{ backgroundColor: "black", color: "white", padding: "20px", minHeight: "100vh" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
         <Button
           variant="contained"
           onClick={() => router.push("/administrador")}
-          style={{
-            backgroundColor: "white",
-            color: "black",
-            border: "1px solid #ccc",
-            marginRight: "10px",
-          }}
+          style={{ backgroundColor: "white", color: "black", border: "1px solid #ccc", marginRight: "10px" }}
         >
           Atrás
         </Button>
-        <img
-          src="/logo-cjmotor.png"
-          alt="Logo"
-          style={{ width: "130px", height: "auto" }}
-        />
+        <img src="/logo-cjmotor.png" alt="Logo" style={{ width: "130px", height: "auto" }} />
       </div>
 
       <Card style={{ backgroundColor: "white", color: "black", padding: "20px" }}>
@@ -156,7 +181,7 @@ export default function CitasPanel() {
                   <TableCell><strong>Fecha</strong></TableCell>
                   <TableCell><strong>Hora</strong></TableCell>
                   <TableCell><strong>Estado</strong></TableCell>
-                  <TableCell><strong>Acción</strong></TableCell>
+                  <TableCell><strong>Acciones</strong></TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -191,13 +216,24 @@ export default function CitasPanel() {
                     </TableCell>
                     <TableCell>{cita.estado}</TableCell>
                     <TableCell>
-                      <Button
-                        variant="contained"
-                        style={{ backgroundColor: "green", color: "white" }}
-                        onClick={() => handleUpdate(cita.id, cita.fecha, cita.hora)}
-                      >
-                        Guardar
-                      </Button>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                        <Button
+                          variant="contained"
+                          style={{ backgroundColor: "green", color: "white" }}
+                          onClick={() => handleUpdate(cita.id, cita.fecha, cita.hora)}
+                        >
+                          Guardar
+                        </Button>
+                        {cita.estado === "Pendiente" && (
+                          <Button
+                            variant="contained"
+                            style={{ backgroundColor: "black", color: "white" }}
+                            onClick={() => handleMarkCompleted(cita.id)}
+                          >
+                            Marcar como Completada
+                          </Button>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
