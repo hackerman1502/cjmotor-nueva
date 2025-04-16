@@ -54,6 +54,31 @@ useEffect(() => {
   fetchCitas();
 }, []);
 
+  const handleDeleteCita = async (id) => {
+  const confirmDelete = window.confirm("¿Estás seguro de que quieres eliminar esta cita?");
+  if (!confirmDelete) return;
+
+  try {
+    // Llamada a Supabase para eliminar la cita
+    const { error } = await supabase
+      .from('citas')
+      .delete()
+      .eq('id', id); // Borra la cita por su id
+
+    if (error) {
+      alert("Hubo un error al eliminar la cita.");
+      console.error("Error de Supabase:", error);
+    } else {
+      // Si se elimina correctamente, actualiza las citas
+      setCitas((prevCitas) => prevCitas.filter((cita) => cita.id !== id));
+      alert("Cita eliminada correctamente.");
+    }
+  } catch (error) {
+    alert("Hubo un error al eliminar la cita.");
+    console.error(error);
+  }
+};
+
   return (
     <div style={{ backgroundColor: "black", color: "white", padding: "20px", minHeight: "100vh" }}>
       {/* Header con botón atrás y logo */}
@@ -103,6 +128,15 @@ useEffect(() => {
               </Table>
             </TableContainer>
           )}
+            <div style={{ marginTop: "10px", display: "flex", justifyContent: "flex-end" }}>
+                <Button
+                  variant="contained"
+                  color="error"
+                  onClick={() => handleDeleteCita(cita.id)}
+                >
+                  Eliminar
+                </Button>
+              </div>
         </CardContent>
       </Card>
     </div>
