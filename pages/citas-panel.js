@@ -12,34 +12,34 @@ export default function CitasPanel() {
   const [citas, setCitas] = useState([]);
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchCitas = async () => {
-      // Obtener el usuario logueado
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      if (userError || !userData?.user) {
-        console.error("Error al obtener el usuario logueado:", userError);
-        alert("No se pudo obtener el usuario logueado.");
-        return;
-      }
+useEffect(() => {
+  const fetchCitas = async () => {
+    // Verificamos la sesión activa
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError || !sessionData.session) {
+      console.error("No hay sesión activa:", sessionError);
+      alert("Debes iniciar sesión primero.");
+      router.push("/login"); // Redirige si no hay sesión
+      return;
+    }
 
-      const userId = userData.user.id;
+    const user = sessionData.session.user;
 
-      // Obtener las citas del usuario
-      const { data, error } = await supabase
-        .from("citas")
-        .select("*")
-        .eq("usuario_id", userId); // Filtra las citas por el ID del usuario
+    // Obtener las citas del usuario
+    const { data, error } = await supabase
+      .from("citas")
+      .select("*")
+      .eq("usuario_id", user.id);
 
-      if (error) {
-        console.error("Error al obtener las citas:", error);
-      } else {
-        setCitas(data); // Establecer las citas en el estado
-      }
-    };
+    if (error) {
+      console.error("Error al obtener las citas:", error);
+    } else {
+      setCitas(data);
+    }
+  };
 
-    fetchCitas();
-  }, []);
-
+  fetchCitas();
+}, []);
   return (
     <div style={{ backgroundColor: "black", color: "white", padding: "20px", minHeight: "100vh" }}>
       {/* Header con botón atrás y logo */}
