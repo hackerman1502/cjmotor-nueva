@@ -49,6 +49,8 @@ const handleSubmit = async (e) => {
 
   // Si estamos registrando un nuevo usuario
   if (isRegistering) {
+    console.log('Registrando usuario...', email, password);
+
     // Intentamos registrar al usuario
     ({ data, error } = await supabase.auth.signUp({
       email,
@@ -56,27 +58,54 @@ const handleSubmit = async (e) => {
     }));
 
     if (error) {
+      console.error('Error al registrar cuenta:', error.message);
       alert('Error al registrar cuenta: ' + error.message);
-      console.error(error);
       return;
     }
 
-    // Si el registro fue exitoso, se debería haber enviado un correo de confirmación
+    console.log('Usuario registrado correctamente:', data);
     alert('Se ha enviado un correo de confirmación, por favor verifica tu bandeja de entrada.');
     return;
   } else {
     // Si estamos intentando iniciar sesión
+    console.log('Iniciando sesión con el correo:', email);
+
     ({ data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     }));
 
     if (error) {
+      console.error('Error al iniciar sesión:', error.message);
       alert('Credenciales incorrectas o cuenta no confirmada');
-      console.error(error);
       return;
     }
+
+    console.log('Usuario autenticado correctamente:', data);
   }
+
+  // Si no hay errores, verificamos si el usuario tiene un rol
+  const { data: userProfile, error: profileError } = await supabase
+    .from('user_profiles')
+    .select('role')
+    .eq('user_id', data.user.id)
+    .single();
+
+  if (profileError) {
+    console.error('Error al obtener el perfil de usuario:', profileError);
+    alert('No se pudo obtener el perfil del usuario.');
+    return;
+  }
+
+  console.log('Perfil del usuario:', userProfile);
+
+  // Si el rol es 'admin', redirigir al panel de administración
+  if (userProfile?.role === 'admin') {
+    router.push('/administrador');
+  } else {
+    router.push('/user-panel');
+  }
+};
 
   // Si no hay errores, verificamos si el usuario tiene un rol
   const { data: userProfile, error: profileError } = await supabase
