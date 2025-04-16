@@ -40,25 +40,37 @@ export default function Login() {
 
     let data, error;
 
-    if (isRegistering) {
-      const result = await supabase.auth.signUp({
-        email,
-        password,
-      });
+if (isRegistering) {
+  const result = await supabase.auth.signUp({
+    email,
+    password,
+  });
 
-      data = result.data;
-      error = result.error;
+  data = result.data;
+  error = result.error;
 
-      if (error) {
-        alert('Error al registrar: ' + error.message);
-        console.error(error);
-        return;
-      }
+  if (error) {
+    alert('Error al registrar: ' + error.message);
+    console.error('Detalles del error:', error);
+    return;
+  }
 
-      // Redirigir tras el registro
-      router.push('/user-panel');
-      return;
-    }
+  // Aquí, intentamos insertar en user_profiles después de crear al usuario
+  const { data: userProfile, error: profileError } = await supabase
+    .from('user_profiles')
+    .insert([{ user_id: data.user.id, role: 'user' }]);
+
+  if (profileError) {
+    console.error('Error al crear el perfil:', profileError);
+    alert('No se pudo crear el perfil de usuario.');
+    return;
+  }
+
+  // Redirigir tras el registro
+  router.push('/user-panel');
+  return;
+}
+
 
     // Si NO es registro, es login
     const result = await supabase.auth.signInWithPassword({
