@@ -18,8 +18,8 @@ export default function Login() {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
         setUser(session.user);
-        setShowForm(false); // Oculta el formulario si ya está logueado
-        router.push("/user-panel"); // 🚀 Esto faltaba para redirigir
+        setShowForm(false);
+        router.push("/user-panel");
       } else {
         setUser(null);
       }
@@ -28,7 +28,6 @@ export default function Login() {
 
     checkSession();
 
-    // Detecta cambios en sesión por si vuelve atrás
     const { data: listener } = supabase.auth.onAuthStateChange(() => {
       checkSession();
     });
@@ -42,92 +41,64 @@ export default function Login() {
     setShowForm(true);
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  let data, error;
+    let data, error;
 
-  // Si estamos registrando un nuevo usuario
-  if (isRegistering) {
-    console.log('Registrando usuario...', email, password);
+    if (isRegistering) {
+      console.log('🔧 Registrando usuario...', email);
+      ({ data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      }));
 
-    // Intentamos registrar al usuario
-    ({ data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    }));
+      if (error) {
+        console.error('❌ Error al registrar:', error.message);
+        alert('Error al registrar: ' + error.message);
+        return;
+      }
 
-    if (error) {
-      console.error('Error al registrar cuenta:', error.message);
-      alert('Error al registrar cuenta: ' + error.message);
+      console.log('✅ Registro exitoso:', data);
+      alert('Se ha enviado un correo de confirmación. Verifica tu bandeja de entrada.');
+      return;
+    } else {
+      console.log('🔐 Iniciando sesión con:', email);
+      ({ data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      }));
+
+      if (error) {
+        console.error('❌ Error al iniciar sesión:', error.message);
+        alert('Credenciales incorrectas o cuenta no confirmada');
+        return;
+      }
+
+      console.log('✅ Sesión iniciada correctamente:', data);
+    }
+
+    // Obtenemos el rol del usuario desde la tabla user_profiles
+    const { data: userProfile, error: profileError } = await supabase
+      .from('user_profiles')
+      .select('role')
+      .eq('user_id', data.user.id)
+      .single();
+
+    if (profileError) {
+      console.error('❌ Error al obtener el perfil:', profileError.message);
+      alert('No se pudo obtener el perfil del usuario.');
       return;
     }
 
-    console.log('Usuario registrado correctamente:', data);
-    alert('Se ha enviado un correo de confirmación, por favor verifica tu bandeja de entrada.');
-    return;
-  } else {
-    // Si estamos intentando iniciar sesión
-    console.log('Iniciando sesión con el correo:', email);
+    console.log('🔎 Rol del usuario:', userProfile?.role);
 
-    ({ data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    }));
-
-    if (error) {
-      console.error('Error al iniciar sesión:', error.message);
-      alert('Credenciales incorrectas o cuenta no confirmada');
-      return;
+    if (userProfile?.role === 'admin') {
+      router.push('/administrador');
+    } else {
+      router.push('/user-panel');
     }
-
-    console.log('Usuario autenticado correctamente:', data);
-  }
-
-  // Si no hay errores, verificamos si el usuario tiene un rol
-  const { data: userProfile, error: profileError } = await supabase
-    .from('user_profiles')
-    .select('role')
-    .eq('user_id', data.user.id)
-    .single();
-
-  if (profileError) {
-    console.error('Error al obtener el perfil de usuario:', profileError);
-    alert('No se pudo obtener el perfil del usuario.');
-    return;
-  }
-
-  console.log('Perfil del usuario:', userProfile);
-
-  // Si el rol es 'admin', redirigir al panel de administración
-  if (userProfile?.role === 'admin') {
-    router.push('/administrador');
-  } else {
-    router.push('/user-panel');
-  }
-};
-
-  // Si no hay errores, verificamos si el usuario tiene un rol
-  const { data: userProfile, error: profileError } = await supabase
-    .from('user_profiles')
-    .select('role')
-    .eq('user_id', data.user.id)
-    .single();
-
-  if (profileError) {
-    console.error('Error al obtener el perfil de usuario:', profileError);
-    alert('No se pudo obtener el perfil del usuario.');
-    return;
-  }
-
-  // Si el rol es 'admin', redirigir al panel de administración
-  if (userProfile?.role === 'admin') {
-    router.push('/administrador');
-  } else {
-    router.push('/user-panel');
-  }
-};
-
+  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
