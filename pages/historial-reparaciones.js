@@ -25,7 +25,7 @@ export default function HistorialReparaciones() {
   const [reparaciones, setReparaciones] = useState([]);
   const router = useRouter();
 
-  useEffect(() => {
+useEffect(() => {
   const fetchCitasCompletadas = async () => {
     // Obtener el usuario logueado
     const { data: userData, error: userError } = await supabase.auth.getUser();
@@ -41,17 +41,18 @@ export default function HistorialReparaciones() {
     const { data, error } = await supabase
       .from("citas_completadas")
       .select("*")
-      .eq("usuario_id", userId); // Filtramos por el usuario_id
+      .eq("usuario_id", userId); // Asegúrate de filtrar por usuario_id
 
     if (error) {
       console.error("Error al obtener citas completadas:", error);
     } else {
-      setCitasCompletadas(data);
+      setCitasCompletadas(data); // Establecer las citas completadas en el estado
     }
   };
 
   fetchCitasCompletadas();
 }, []);
+
 
 
   return (
