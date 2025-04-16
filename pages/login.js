@@ -28,8 +28,8 @@ export default function Login() {
       }));
 
       if (error) {
-        alert('Hubo un problema al registrar el usuario. Intenta nuevamente.');
-        console.error(error);
+        alert(`Hubo un problema al registrar el usuario. Error: ${error.message}`);
+        console.error('Error en el registro:', error);
       } else {
         alert('¡Registro exitoso! Ahora puedes iniciar sesión.');
         setIsRegistering(false); // Cambiar a la vista de login
@@ -43,7 +43,7 @@ export default function Login() {
 
       if (error) {
         alert('Credenciales incorrectas o cuenta no confirmada');
-        console.error(error);
+        console.error('Error en el login:', error);
       } else {
         // Si es admin, redirige a administrador
         if (email === 'admin' && password === 'admin') {
@@ -185,3 +185,4 @@ const styles = {
     transition: 'all 0.3s ease',
   },
 };
+
