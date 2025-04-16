@@ -85,9 +85,9 @@ export default function UserPanel() {
 >
   Solicitar cita
 </Button>
-    <Button
+         <Button
   variant="contained"
-  style={{ backgroundColor: "#1976d2", color: "white", marginTop: "20px" }}
+  style={styles.button}
   onClick={() => router.push("/mis-citas")}
 >
   Mis Citas
