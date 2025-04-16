@@ -5,6 +5,7 @@ import { useRouter } from 'next/router';
 import { supabase } from '../lib/supabaseClient';
 
 export default function Login() {
+  const [showForm, setShowForm] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isRegistering, setIsRegistering] = useState(false);
@@ -17,6 +18,7 @@ export default function Login() {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
         setUser(session.user);
+        setShowForm(false);
         router.push("/user-panel");
       } else {
         setUser(null);
@@ -25,7 +27,7 @@ export default function Login() {
     };
 
     checkSession();
-    
+
     const { data: listener } = supabase.auth.onAuthStateChange(() => {
       checkSession();
     });
@@ -35,79 +37,63 @@ export default function Login() {
     };
   }, []);
 
+  const handleAccessClick = () => {
+    setShowForm(true);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     let data, error;
 
     if (isRegistering) {
-      // Crear usuario en auth
-      const result = await supabase.auth.signUp({
+      console.log('🔧 Registrando usuario...', email);
+      ({ data, error } = await supabase.auth.signUp({
         email,
         password,
-      });
-
-      data = result.data;
-      error = result.error;
+      }));
 
       if (error) {
+        console.error('❌ Error al registrar:', error.message);
         alert('Error al registrar: ' + error.message);
-        console.error('Detalles del error:', error);
         return;
       }
 
-      // Aquí, insertamos el perfil en la tabla 'perfiles' después de crear al usuario
-      const { data: userProfile, error: profileError } = await supabase
-        .from('perfiles')
-        .insert([{ user_id: data.user.id, rol: 'user' }]);
+      console.log('✅ Registro exitoso:', data);
+      alert('Se ha enviado un correo de confirmación. Verifica tu bandeja de entrada.');
+      return;
+    } else {
+      console.log('🔐 Iniciando sesión con:', email);
+      ({ data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      }));
 
-      if (profileError) {
-        console.error('Error al crear el perfil:', profileError);
-        alert('No se pudo crear el perfil de usuario.');
+      if (error) {
+        console.error('❌ Error al iniciar sesión:', error.message);
+        alert('Credenciales incorrectas o cuenta no confirmada');
         return;
       }
 
-      // Redirigir tras el registro
-      router.push('/user-panel');
-      return;
+      console.log('✅ Sesión iniciada correctamente:', data);
     }
 
-    // Si NO es registro, es login
-    const result = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    data = result.data;
-    error = result.error;
-
-    if (error) {
-      alert('Credenciales incorrectas o cuenta no confirmada');
-      console.error(error);
-      return;
-    }
-
-    const userId = data.user?.id;
-    if (!userId) {
-      alert('No se pudo obtener el usuario');
-      return;
-    }
-
-    // Obtener el rol desde la tabla 'perfiles'
+    // Obtenemos el rol del usuario desde la tabla user_profiles
     const { data: userProfile, error: profileError } = await supabase
-      .from('perfiles')
-      .select('rol')
-      .eq('user_id', userId)
+      .from('user_profiles')
+      .select('role')
+      .eq('user_id', data.user.id)
       .single();
 
     if (profileError) {
-      console.error('Error al obtener el perfil de usuario:', profileError);
+      console.error('❌ Error al obtener el perfil:', profileError.message);
       alert('No se pudo obtener el perfil del usuario.');
       return;
     }
 
-    // Redirigir según el rol del usuario
-    if (userProfile?.rol === 'admin') {
+    console.log('🔎 Rol del usuario:', userProfile?.role);
+
+    if (userProfile?.role === 'admin') {
       router.push('/administrador');
     } else {
       router.push('/user-panel');
@@ -117,6 +103,7 @@ export default function Login() {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setUser(null);
+    setShowForm(false);
   };
 
   if (loading) {
@@ -153,7 +140,22 @@ export default function Login() {
             {isRegistering ? 'Regístrate para gestionar tus citas' : 'Inicia sesión para gestionar tus citas'}
           </p>
 
-          {!user && (
+          {!showForm && !user && (
+            <button style={styles.button} onClick={handleAccessClick}>
+              Acceder
+            </button>
+          )}
+
+          {user && (
+            <button
+              style={{ ...styles.button, backgroundColor: '#d9534f', color: '#fff' }}
+              onClick={handleLogout}
+            >
+              Cerrar sesión
+            </button>
+          )}
+
+          {showForm && !user && (
             <form style={styles.formWrapper} onSubmit={handleSubmit}>
               <input
                 type="text"
@@ -180,15 +182,6 @@ export default function Login() {
                 {isRegistering ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Regístrate'}
               </button>
             </form>
-          )}
-
-          {user && (
-            <button
-              style={{ ...styles.button, backgroundColor: '#d9534f', color: '#fff' }}
-              onClick={handleLogout}
-            >
-              Cerrar sesión
-            </button>
           )}
         </div>
       </div>
