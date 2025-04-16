@@ -26,32 +26,33 @@ export default function HistorialReparaciones() {
   const router = useRouter();
 
   useEffect(() => {
-    const fetchReparaciones = async () => {
-      // Obtener el usuario logueado
-      const { data: userData, error: userError } = await supabase.auth.getUser();
+  const fetchCitasCompletadas = async () => {
+    // Obtener el usuario logueado
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError || !userData?.user) {
+      console.error("Error al obtener el usuario logueado:", userError);
+      alert("No se pudo obtener el usuario logueado.");
+      return;
+    }
 
-      if (userError || !userData?.user) {
-        console.error("No se pudo obtener el usuario logueado:", userError);
-        alert("No estás logueado.");
-        router.push("/login");
-        return;
-      }
+    const userId = userData.user.id;
 
-      // Obtener las reparaciones (citas completadas) para el usuario logueado
-      const { data, error } = await supabase
-        .from("citas_completadas")
-        .select("*")
-        .eq("usuario_id", userData.user.id); // Filtrar por el usuario logueado
+    // Obtener solo las citas completadas de este usuario
+    const { data, error } = await supabase
+      .from("citas_completadas")
+      .select("*")
+      .eq("usuario_id", userId); // Filtramos por el usuario_id
 
-      if (error) {
-        console.error("Error al obtener reparaciones:", error);
-      } else {
-        setReparaciones(data); // Establecer las reparaciones recuperadas en el estado
-      }
-    };
+    if (error) {
+      console.error("Error al obtener citas completadas:", error);
+    } else {
+      setCitasCompletadas(data);
+    }
+  };
 
-    fetchReparaciones();
-  }, []);
+  fetchCitasCompletadas();
+}, []);
+
 
   return (
     <div style={{ backgroundColor: "black", color: "white", padding: "20px", minHeight: "100vh" }}>
