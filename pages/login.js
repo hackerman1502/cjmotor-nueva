@@ -140,38 +140,32 @@ export default function Login() {
           </p>
 
           {!user && (
-            <>
-              <button style={styles.button} onClick={() => setIsRegistering(false)}>
-                Iniciar sesión
+            <form style={styles.formWrapper} onSubmit={handleSubmit}>
+              <input
+                type="text"
+                placeholder="Correo electrónico"
+                style={styles.input}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <input
+                type="password"
+                placeholder="Contraseña"
+                style={styles.input}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <button type="submit" style={styles.button}>
+                {isRegistering ? 'Registrarse' : 'Entrar'}
               </button>
-
-              <form style={styles.formWrapper} onSubmit={handleSubmit}>
-                <input
-                  type="text"
-                  placeholder="Correo electrónico"
-                  style={styles.input}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-                <input
-                  type="password"
-                  placeholder="Contraseña"
-                  style={styles.input}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-                <button type="submit" style={styles.button}>
-                  {isRegistering ? 'Registrarse' : 'Entrar'}
-                </button>
-                <button
-                  type="button"
-                  style={{ ...styles.button, backgroundColor: '#444', color: '#fff' }}
-                  onClick={() => setIsRegistering(!isRegistering)}
-                >
-                  {isRegistering ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Regístrate'}
-                </button>
-              </form>
-            </>
+              <button
+                type="button"
+                style={{ ...styles.button, backgroundColor: '#444', color: '#fff' }}
+                onClick={() => setIsRegistering(!isRegistering)}
+              >
+                {isRegistering ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Regístrate'}
+              </button>
+            </form>
           )}
 
           {user && (
