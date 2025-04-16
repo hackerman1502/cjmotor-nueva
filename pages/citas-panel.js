@@ -78,18 +78,6 @@ export default function CitasPanel() {
 
 const handleMarkCompleted = async (id) => {
   try {
-    // Obtener el usuario logueado
-    const { data: userData, error: userError } = await supabase.auth.getUser();
-
-    if (userError || !userData?.user) {
-      console.error("No se pudo obtener el usuario logueado:", userError);
-      alert("No estás logueado.");
-      return;
-    }
-
-    console.log("Usuario logueado:", userData.user);  // Verificar que estamos obteniendo el usuario correctamente
-
-    // Obtener la cita para procesarla
     const { data: cita, error: fetchError } = await supabase
       .from("citas")
       .select("*")
@@ -101,9 +89,15 @@ const handleMarkCompleted = async (id) => {
       return;
     }
 
-    console.log("Cita encontrada:", cita);  // Verificar que la cita se obtiene correctamente
+    // Obtener el usuario logueado
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError || !userData?.user) {
+      console.error("Error al obtener el usuario logueado:", userError);
+      alert("No se pudo obtener el usuario logueado.");
+      return;
+    }
 
-    // Insertar la cita en la tabla citas_completadas con el usuario_id
+    // Asignar el usuario_id al mover la cita
     const { error: insertError } = await supabase
       .from("citas_completadas")
       .insert([
@@ -114,19 +108,15 @@ const handleMarkCompleted = async (id) => {
           fecha: cita.fecha,
           hora: cita.hora,
           estado: "Completada",
-          usuario_id: userData.user.id,  // Asegurándonos de que el usuario_id se inserte
+          usuario_id: userData.user.id, // Asegúrate de asignar el usuario_id correcto
         },
       ]);
 
     if (insertError) {
       console.error("Error al insertar en citas_completadas:", insertError);
-      alert("Hubo un error al insertar la cita completada.");
       return;
     }
 
-    console.log("Cita completada insertada correctamente");  // Verificar que la cita fue insertada
-
-    // Eliminar la cita de la tabla citas
     const { error: deleteError } = await supabase
       .from("citas")
       .delete()
@@ -137,8 +127,6 @@ const handleMarkCompleted = async (id) => {
       return;
     }
 
-    console.log("Cita eliminada correctamente");  // Verificar que la cita fue eliminada
-
     fetchCitas();
     alert("Cita marcada como completada y movida correctamente.");
   } catch (error) {
@@ -146,7 +134,6 @@ const handleMarkCompleted = async (id) => {
     alert("Hubo un problema al procesar la cita.");
   }
 };
-
 
 
   return (
