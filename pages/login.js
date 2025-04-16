@@ -25,25 +25,32 @@ export default function Login() {
   
     let data, error;
   
-    if (isRegistering) {
-      ({ data, error } = await supabase.auth.signUp({
-        email,
-        password,
-      }));
-    } else {
-      ({ data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      }));
-    }
-  
-    if (error) {
-      alert('Credenciales incorrectas o cuenta no confirmada');
-      console.error(error);
-    } else {
-      router.push('/user-panel');
-    }
-  };
+if (isRegistering) {
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+  });
+
+  if (error) {
+    alert('Hubo un problema al registrar el usuario. Intenta nuevamente.');
+    console.error(error);
+  } else {
+    alert('¡Registro exitoso! Ahora puedes iniciar sesión.');
+    setIsRegistering(false); // Cambiar a la vista de login
+  }
+} else {
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (error) {
+    alert('Credenciales incorrectas o cuenta no confirmada');
+    console.error(error);
+  } else {
+    router.push('/user-panel');
+  }
+}
 
   return (
     <>
