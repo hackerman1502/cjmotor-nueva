@@ -1,6 +1,7 @@
 import { Button } from "@mui/material";
 import { useRouter } from "next/router";
 import Image from "next/image";
+import { supabase } from "../lib/supabaseClient";
 
 
 const styles = {
@@ -45,9 +46,10 @@ export default function UserPanel() {
   const router = useRouter();
 
     // Función para redirigir a la página principal
-    const handleGoHome = () => {
-      router.push('/login');  // Redirige a la página principal
-    };
+   const handleGoHome = async () => {
+  await supabase.auth.signOut(); // Cierra sesión
+  router.push('/login');         // Vuelve al login
+};
 
   return (
     <div style={styles.container}>
