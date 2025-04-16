@@ -43,38 +43,76 @@ export default function CitasPanel() {
   }, [filter, estadoFilter]);
 
   const handleMarkCompleted = async (id) => {
-    const { data, error } = await supabase
-      .from("citas")
-      .update({ estado: "Completada" })
-      .eq("id", id);
-
-    if (error) {
-      console.error("Error al actualizar el estado:", error);
-    } else {
-      alert("Estado actualizado a Completada");
-      fetchCitas();
+    try {
+      // 1. Obtener la cita que se marcará como completada
+      const { data: cita, error: fetchError } = await supabase
+        .from("citas")
+        .select("*")
+        .eq("id", id)
+        .single(); // Aseguramos que solo obtenemos una cita
+  
+      if (fetchError) {
+        console.error("Error al obtener la cita:", fetchError);
+        return;
+      }
+  
+      // 2. Insertar la cita en la tabla citas_completadas
+      const { error: insertError } = await supabase
+        .from("citas_completadas")
+        .insert([
+          {
+            nombre: cita.nombre,
+            telefono: cita.telefono,
+            servicio: cita.servicio,
+            fecha: cita.fecha,
+            hora: cita.hora,
+            estado: "Completada",  // Esto es opcional, ya que el estado predeterminado es "Completada"
+          },
+        ]);
+  
+      if (insertError) {
+        console.error("Error al insertar en citas_completadas:", insertError);
+        return;
+      }
+  
+      // 3. Eliminar la cita de la tabla citas
+      const { error: deleteError } = await supabase
+        .from("citas")
+        .delete()
+        .eq("id", id);
+  
+      if (deleteError) {
+        console.error("Error al eliminar la cita:", deleteError);
+        return;
+      }
+  
+      // 4. Actualizar la lista de citas
+      fetchCitas(); // Refrescar las citas
+      alert("Cita marcada como completada y movida correctamente.");
+    } catch (error) {
+      console.error("Error inesperado:", error);
+      alert("Hubo un problema al procesar la cita.");
     }
   };
 
   return (
     <div style={{ backgroundColor: "black", color: "white", padding: "20px", minHeight: "100vh" }}>
       
-      {/* Encabezado con botón atrás y logo */}
-<div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
-<Button
-  variant="contained"
-  onClick={() => router.push("/administrador")}
-  style={{
-    backgroundColor: "white",  // Fondo blanco
-    color: "black",            // Texto negro
-    border: "1px solid #ccc",  // Borde opcional (puedes personalizarlo)
-    marginRight: "10px",       // Mantener el margen
-  }}
->
-  Atrás
-</Button>
-  <img src="/logo-cjmotor.png" alt="Logo" style={{ width: "130px", height: "auto" }} />
-</div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+        <Button
+          variant="contained"
+          onClick={() => router.push("/administrador")}
+          style={{
+            backgroundColor: "white",
+            color: "black",
+            border: "1px solid #ccc",
+            marginRight: "10px",
+          }}
+        >
+          Atrás
+        </Button>
+        <img src="/logo-cjmotor.png" alt="Logo" style={{ width: "130px", height: "auto" }} />
+      </div>
 
       {/* Tarjeta blanca */}
       <Card style={{ backgroundColor: "white", color: "black", padding: "20px" }}>
@@ -83,7 +121,6 @@ export default function CitasPanel() {
             Lista de Citas
           </Typography>
 
-          {/* Filtros juntos */}
           <div style={{ display: "flex", gap: "20px", marginBottom: "20px" }}>
             <FormControl variant="outlined" style={{ width: "200px", backgroundColor: "white" }}>
               <InputLabel>Filtrar por Estado</InputLabel>
@@ -111,7 +148,6 @@ export default function CitasPanel() {
             </FormControl>
           </div>
 
-          {/* Tabla de citas */}
           <TableContainer component={Paper}>
             <Table>
               <TableHead>
@@ -138,8 +174,7 @@ export default function CitasPanel() {
                       {cita.estado === "Pendiente" && (
                         <Button
                           variant="contained"
-                          backgroundcolor="black"
-                          color="white"
+                          style={{ backgroundColor: "black", color: "white" }}
                           onClick={() => handleMarkCompleted(cita.id)}
                         >
                           Marcar como Completada
