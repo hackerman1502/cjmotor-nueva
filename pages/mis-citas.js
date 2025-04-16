@@ -54,30 +54,34 @@ useEffect(() => {
   fetchCitas();
 }, []);
 
-  const handleDeleteCita = async (id) => {
+ const handleDeleteCita = async (id) => {
+  // Confirmación antes de eliminar
   const confirmDelete = window.confirm("¿Estás seguro de que quieres eliminar esta cita?");
   if (!confirmDelete) return;
 
   try {
-    // Llamada a Supabase para eliminar la cita
-    const { error } = await supabase
+    // Intento de eliminación de la cita en la base de datos
+    const { data, error } = await supabase
       .from('citas')
       .delete()
-      .eq('id', id); // Borra la cita por su id
+      .eq('id', id); // Se asegura de que la cita con el id especificado se elimine
 
+    // Si hay un error en la eliminación, lo mostramos
     if (error) {
+      console.error("Error al eliminar la cita:", error);
       alert("Hubo un error al eliminar la cita.");
-      console.error("Error de Supabase:", error);
     } else {
-      // Si se elimina correctamente, actualiza las citas
+      // Si la cita fue eliminada correctamente, actualizamos el estado local
+      console.log("Cita eliminada correctamente", data);
       setCitas((prevCitas) => prevCitas.filter((cita) => cita.id !== id));
       alert("Cita eliminada correctamente.");
     }
   } catch (error) {
+    console.error("Hubo un error al eliminar la cita:", error);
     alert("Hubo un error al eliminar la cita.");
-    console.error(error);
   }
 };
+
 
   return (
     <div style={{ backgroundColor: "black", color: "white", padding: "20px", minHeight: "100vh" }}>
