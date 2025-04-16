@@ -21,7 +21,7 @@ const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function HistorialReparaciones() {
-  const [reparaciones, setReparaciones] = useState([]);
+  const [reparaciones, setReparaciones] = useState([]); // Usamos setReparaciones aquí
   const router = useRouter();
 
   useEffect(() => {
