@@ -15,45 +15,51 @@ import {
 } from "@mui/material";
 import { useRouter } from "next/router";
 
-// Supabase config
-const supabase = createClient(
-  "https://lslvykkxyqtkcyrxxzey.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxzbHZ5a2t4eXF0a2N5cnh4emV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2NTAwODQsImV4cCI6MjA2MDIyNjA4NH0.JnVxWZWB4Lbod01G23PSNzq6bd6N-DCXXxZeLci8Oc8"
-);
+// Configuración de Supabase
+const supabaseUrl = "https://lslvykkxyqtkcyrxxzey.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxzbHZ5a2t4eXF0a2N5cnh4emV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2NTAwODQsImV4cCI6MjA2MDIyNjA4NH0.JnVxWZWB4Lbod01G23PSNzq6bd6N-DCXXxZeLci8Oc8";
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function HistorialReparaciones() {
   const [reparaciones, setReparaciones] = useState([]);
   const router = useRouter();
 
-useEffect(() => {
-  const fetchCitasCompletadas = async () => {
-    // Obtener el usuario logueado
-    const { data: userData, error: userError } = await supabase.auth.getUser();
-    if (userError || !userData?.user) {
-      console.error("Error al obtener el usuario logueado:", userError);
-      alert("No se pudo obtener el usuario logueado.");
-      return;
-    }
+  useEffect(() => {
+    const fetchCitasCompletadas = async () => {
+      try {
+        // Obtener el usuario logueado
+        const { data: userData, error: userError } = await supabase.auth.getUser();
+        
+        if (userError || !userData?.user) {
+          console.error("Error al obtener el usuario logueado:", userError);
+          alert("No se pudo obtener el usuario logueado.");
+          return;
+        }
 
-    const userId = userData.user.id;
+        const userId = userData.user.id;
 
-    // Obtener solo las citas completadas de este usuario
-    const { data, error } = await supabase
-      .from("citas_completadas")
-      .select("*")
-      .eq("usuario_id", userId); // Asegúrate de filtrar por usuario_id
+        // Verificar que estamos obteniendo el userId correctamente
+        console.log("ID del usuario logueado:", userId);
 
-    if (error) {
-      console.error("Error al obtener citas completadas:", error);
-    } else {
-      setReparaciones(data);  // Establecer las citas completadas en el estado
-    }
-  };
+        // Obtener las citas completadas de este usuario
+        const { data, error } = await supabase
+          .from("citas_completadas")
+          .select("*")
+          .eq("usuario_id", userId); // Filtra las reparaciones por el ID del usuario
 
-  fetchCitasCompletadas();
-}, []);
+        if (error) {
+          console.error("Error al obtener las citas completadas:", error);
+        } else {
+          console.log("Reparaciones recuperadas:", data); // Muestra las reparaciones obtenidas
+          setReparaciones(data); // Establece las reparaciones en el estado
+        }
+      } catch (err) {
+        console.error("Hubo un error al intentar recuperar las reparaciones:", err);
+      }
+    };
 
-
+    fetchCitasCompletadas();
+  }, []);
 
   return (
     <div style={{ backgroundColor: "black", color: "white", padding: "20px", minHeight: "100vh" }}>
@@ -113,4 +119,3 @@ useEffect(() => {
     </div>
   );
 }
-
