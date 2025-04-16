@@ -52,6 +52,7 @@ if (isRegistering) {
   }
 }
 
+
   return (
     <>
       <Head>
