@@ -18,40 +18,42 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
   
-    if (email === 'admin' && password === 'admin') {
-      router.push('/administrador');
-      return;
-    }
-  
     let data, error;
   
-if (isRegistering) {
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-  });
+    if (isRegistering) {
+      // Registro
+      ({ data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      }));
 
-  if (error) {
-    alert('Hubo un problema al registrar el usuario. Intenta nuevamente.');
-    console.error(error);
-  } else {
-    alert('¡Registro exitoso! Ahora puedes iniciar sesión.');
-    setIsRegistering(false); // Cambiar a la vista de login
-  }
-} else {
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
+      if (error) {
+        alert('Hubo un problema al registrar el usuario. Intenta nuevamente.');
+        console.error(error);
+      } else {
+        alert('¡Registro exitoso! Ahora puedes iniciar sesión.');
+        setIsRegistering(false); // Cambiar a la vista de login
+      }
+    } else {
+      // Inicio de sesión
+      ({ data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      }));
 
-  if (error) {
-    alert('Credenciales incorrectas o cuenta no confirmada');
-    console.error(error);
-  } else {
-    router.push('/user-panel');
-  }
-}
-
+      if (error) {
+        alert('Credenciales incorrectas o cuenta no confirmada');
+        console.error(error);
+      } else {
+        // Si es admin, redirige a administrador
+        if (email === 'admin' && password === 'admin') {
+          router.push('/administrador');
+        } else {
+          router.push('/user-panel');
+        }
+      }
+    }
+  };
 
   return (
     <>
