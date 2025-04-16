@@ -31,7 +31,7 @@ export default function Login() {
         password,
       }));
     } else {
-      ({ data, error } = await supabase.auth.signInWithPassword({
+      ({ data, error } = await supabase.auth.signIn({
         email,
         password,
       }));
