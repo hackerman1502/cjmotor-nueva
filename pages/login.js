@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Head from 'next/head';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { supabase } from '../lib/supabaseClient';
 
@@ -8,35 +8,96 @@ export default function Login() {
   const [showForm, setShowForm] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setUser(session.user);
+        setShowForm(false); // Oculta el formulario si ya está logueado
+        router.push("/user-panel"); // 🚀 Esto faltaba para redirigir
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    };
+
+    checkSession();
+
+    // Detecta cambios en sesión por si vuelve atrás
+    const { data: listener } = supabase.auth.onAuthStateChange(() => {
+      checkSession();
+    });
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
+  }, []);
 
   const handleAccessClick = () => {
     setShowForm(true);
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  if (email === 'admin' && password === 'admin') {
-    router.push('/administrador');
-    return;
+    let data, error;
+
+    if (isRegistering) {
+      ({ data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      }));
+    } else {
+      ({ data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      }));
+    }
+
+    if (error) {
+      alert('Credenciales incorrectas o cuenta no confirmada');
+      console.error(error);
+    } else {
+      // Verificar si el usuario tiene el rol de admin
+      const { data: userProfile, error: profileError } = await supabase
+        .from('user_profiles')
+        .select('role')
+        .eq('user_id', data.user.id)
+        .single();
+
+      if (profileError) {
+        console.error('Error al obtener el perfil de usuario:', profileError);
+        alert('No se pudo obtener el perfil del usuario.');
+        return;
+      }
+
+      // Si el rol es 'admin', redirigir al panel de administración
+      if (userProfile?.role === 'admin') {
+        router.push('/administrador');
+      } else {
+        router.push('/user-panel');
+      }
+    }
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    setShowForm(false);
+  };
+
+  if (loading) {
+    return (
+      <div style={{ color: 'white', textAlign: 'center', marginTop: '50px' }}>
+        Cargando...
+      </div>
+    );
   }
-
-  const { data, error } = await supabase.auth.signInWithPassword({
-  email: email.trim(),
-  password,
-});
-
-  console.log("DATA:", data);
-  console.log("ERROR:", error);
-
-  if (error) {
-    alert('Error al iniciar sesión: ' + error.message);
-  } else {
-    alert('Login correcto');
-    router.push('/user-panel');
-  }
-};
 
   return (
     <>
@@ -60,19 +121,30 @@ const handleSubmit = async (e) => {
             />
           </div>
           <h1 style={styles.title}>Bienvenido a CJMOTOR</h1>
-          <p style={styles.subtitle}>Inicia sesión para gestionar tus citas</p>
+          <p style={styles.subtitle}>
+            {isRegistering ? 'Regístrate para gestionar tus citas' : 'Inicia sesión para gestionar tus citas'}
+          </p>
 
-          {!showForm && (
+          {!showForm && !user && (
             <button style={styles.button} onClick={handleAccessClick}>
               Acceder
             </button>
           )}
 
-          {showForm && (
+          {user && (
+            <button
+              style={{ ...styles.button, backgroundColor: '#d9534f', color: '#fff' }}
+              onClick={handleLogout}
+            >
+              Cerrar sesión
+            </button>
+          )}
+
+          {showForm && !user && (
             <form style={styles.formWrapper} onSubmit={handleSubmit}>
               <input
                 type="text"
-                placeholder="Correo electrónico o admin"
+                placeholder="Correo electrónico"
                 style={styles.input}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -84,7 +156,16 @@ const handleSubmit = async (e) => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
-              <button type="submit" style={styles.button}>Entrar</button>
+              <button type="submit" style={styles.button}>
+                {isRegistering ? 'Registrarse' : 'Entrar'}
+              </button>
+              <button
+                type="button"
+                style={{ ...styles.button, backgroundColor: '#444', color: '#fff' }}
+                onClick={() => setIsRegistering(!isRegistering)}
+              >
+                {isRegistering ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Regístrate'}
+              </button>
             </form>
           )}
         </div>
@@ -157,4 +238,3 @@ const styles = {
     transition: 'all 0.3s ease',
   },
 };
-
