@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Head from 'next/head';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { supabase } from '../lib/supabaseClient';
 
@@ -9,7 +9,20 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isRegistering, setIsRegistering] = useState(false);
+  const [user, setUser] = useState(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setUser(session.user);
+        router.push('/user-panel');
+      }
+    };
+
+    checkSession();
+  }, []);
 
   const handleAccessClick = () => {
     setShowForm(true);
@@ -17,14 +30,14 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     if (email === 'admin' && password === 'admin') {
       router.push('/administrador');
       return;
     }
-  
+
     let data, error;
-  
+
     if (isRegistering) {
       ({ data, error } = await supabase.auth.signUp({
         email,
@@ -36,13 +49,19 @@ export default function Login() {
         password,
       }));
     }
-  
+
     if (error) {
       alert('Credenciales incorrectas o cuenta no confirmada');
       console.error(error);
     } else {
       router.push('/user-panel');
     }
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    setShowForm(false);
   };
 
   return (
@@ -72,9 +91,16 @@ export default function Login() {
           </p>
 
           {!showForm && (
-            <button style={styles.button} onClick={handleAccessClick}>
-              Acceder
-            </button>
+            <>
+              <button style={styles.button} onClick={handleAccessClick}>
+                Acceder
+              </button>
+              {user && (
+                <button style={{ ...styles.button, backgroundColor: '#d9534f', color: '#fff' }} onClick={handleLogout}>
+                  Cerrar sesión
+                </button>
+              )}
+            </>
           )}
 
           {showForm && (
