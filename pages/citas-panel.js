@@ -89,7 +89,7 @@ const handleMarkCompleted = async (id) => {
       return;
     }
 
-    // Obtener el usuario logueado
+    // Obtener el usuario logueado correctamente
     const { data: userData, error: userError } = await supabase.auth.getUser();
     if (userError || !userData?.user) {
       console.error("Error al obtener el usuario logueado:", userError);
@@ -97,7 +97,10 @@ const handleMarkCompleted = async (id) => {
       return;
     }
 
-    // Asignar el usuario_id al mover la cita
+    // Obtener el usuario_id del usuario logueado
+    const usuario_id = userData.user.id;
+
+    // Insertar la cita completada con el usuario_id correcto
     const { error: insertError } = await supabase
       .from("citas_completadas")
       .insert([
@@ -108,7 +111,7 @@ const handleMarkCompleted = async (id) => {
           fecha: cita.fecha,
           hora: cita.hora,
           estado: "Completada",
-          usuario_id: userData.user.id, // Asegúrate de asignar el usuario_id correcto
+          usuario_id: usuario_id, // Asignamos el usuario_id del usuario logueado
         },
       ]);
 
@@ -117,6 +120,7 @@ const handleMarkCompleted = async (id) => {
       return;
     }
 
+    // Eliminar la cita de la tabla "citas"
     const { error: deleteError } = await supabase
       .from("citas")
       .delete()
@@ -134,6 +138,7 @@ const handleMarkCompleted = async (id) => {
     alert("Hubo un problema al procesar la cita.");
   }
 };
+
 
 
   return (
