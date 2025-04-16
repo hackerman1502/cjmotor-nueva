@@ -42,48 +42,63 @@ export default function Login() {
     setShowForm(true);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    let data, error;
+  let data, error;
 
-    if (isRegistering) {
-      ({ data, error } = await supabase.auth.signUp({
-        email,
-        password,
-      }));
-    } else {
-      ({ data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      }));
+  // Si estamos registrando un nuevo usuario
+  if (isRegistering) {
+    // Intentamos registrar al usuario
+    ({ data, error } = await supabase.auth.signUp({
+      email,
+      password,
+    }));
+
+    if (error) {
+      alert('Error al registrar cuenta: ' + error.message);
+      console.error(error);
+      return;
     }
+
+    // Si el registro fue exitoso, se debería haber enviado un correo de confirmación
+    alert('Se ha enviado un correo de confirmación, por favor verifica tu bandeja de entrada.');
+    return;
+  } else {
+    // Si estamos intentando iniciar sesión
+    ({ data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    }));
 
     if (error) {
       alert('Credenciales incorrectas o cuenta no confirmada');
       console.error(error);
-    } else {
-      // Verificar si el usuario tiene el rol de admin
-      const { data: userProfile, error: profileError } = await supabase
-        .from('user_profiles')
-        .select('role')
-        .eq('user_id', data.user.id)
-        .single();
-
-      if (profileError) {
-        console.error('Error al obtener el perfil de usuario:', profileError);
-        alert('No se pudo obtener el perfil del usuario.');
-        return;
-      }
-
-      // Si el rol es 'admin', redirigir al panel de administración
-      if (userProfile?.role === 'admin') {
-        router.push('/administrador');
-      } else {
-        router.push('/user-panel');
-      }
+      return;
     }
-  };
+  }
+
+  // Si no hay errores, verificamos si el usuario tiene un rol
+  const { data: userProfile, error: profileError } = await supabase
+    .from('user_profiles')
+    .select('role')
+    .eq('user_id', data.user.id)
+    .single();
+
+  if (profileError) {
+    console.error('Error al obtener el perfil de usuario:', profileError);
+    alert('No se pudo obtener el perfil del usuario.');
+    return;
+  }
+
+  // Si el rol es 'admin', redirigir al panel de administración
+  if (userProfile?.role === 'admin') {
+    router.push('/administrador');
+  } else {
+    router.push('/user-panel');
+  }
+};
+
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
