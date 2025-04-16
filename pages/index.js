@@ -125,7 +125,26 @@ const handleSubmit = async (e) => {
       return;
     }
 
-    // Inserta la cita con el usuario_id
+    // Verificar si ya existe una cita para esa fecha y hora
+    const { data: citasExistentes, error: errorCitasExistentes } = await supabase
+      .from('citas')
+      .select("*")
+      .eq("fecha", form.fecha)
+      .eq("hora", form.hora)
+      .eq("usuario_id", user.id); // Verifica si ya tiene una cita en esa fecha y hora
+
+    if (errorCitasExistentes) {
+      alert("Error al verificar las citas existentes");
+      console.error("Error de Supabase:", errorCitasExistentes);
+      return;
+    }
+
+    if (citasExistentes.length > 0) {
+      alert("Ya tienes una cita registrada en esa fecha y hora.");
+      return;
+    }
+
+    // Si no existe una cita, procede a insertar la nueva cita
     const { data, error } = await supabase
       .from('citas')
       .insert([{
@@ -151,14 +170,13 @@ const handleSubmit = async (e) => {
         comentario: "",
         hora: "",
       });
-      fetchCitas();
+      fetchCitas(); // Actualiza las citas
     }
   } catch (error) {
     alert("Hubo un error al enviar la cita");
     console.error(error);
   }
 };
-
   const isFormValid = () => {
     return form.nombre && form.telefono && form.fecha && form.hora && form.servicio;
   };
