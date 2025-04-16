@@ -27,7 +27,7 @@ export default function Login() {
     };
 
     checkSession();
-
+    
     const { data: listener } = supabase.auth.onAuthStateChange(() => {
       checkSession();
     });
