@@ -76,54 +76,67 @@ export default function CitasPanel() {
     }
   };
 
-  const handleMarkCompleted = async (id) => {
-    try {
-      const { data: cita, error: fetchError } = await supabase
-        .from("citas")
-        .select("*")
-        .eq("id", id)
-        .single();
-
-      if (fetchError) {
-        console.error("Error al obtener la cita:", fetchError);
-        return;
-      }
-
-      const { error: insertError } = await supabase
-        .from("citas_completadas")
-        .insert([
-          {
-            nombre: cita.nombre,
-            telefono: cita.telefono,
-            servicio: cita.servicio,
-            fecha: cita.fecha,
-            hora: cita.hora,
-            estado: "Completada",
-          },
-        ]);
-
-      if (insertError) {
-        console.error("Error al insertar en citas_completadas:", insertError);
-        return;
-      }
-
-      const { error: deleteError } = await supabase
-        .from("citas")
-        .delete()
-        .eq("id", id);
-
-      if (deleteError) {
-        console.error("Error al eliminar la cita:", deleteError);
-        return;
-      }
-
-      fetchCitas();
-      alert("Cita marcada como completada y movida correctamente.");
-    } catch (error) {
-      console.error("Error inesperado:", error);
-      alert("Hubo un problema al procesar la cita.");
+const handleMarkCompleted = async (id) => {
+  try {
+    // Obtener el usuario logueado
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    
+    if (userError || !userData?.user) {
+      console.error("No se pudo obtener el usuario logueado:", userError);
+      return;
     }
-  };
+
+    // Obtener la cita para procesarla
+    const { data: cita, error: fetchError } = await supabase
+      .from("citas")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (fetchError) {
+      console.error("Error al obtener la cita:", fetchError);
+      return;
+    }
+
+    // Insertar la cita en la tabla citas_completadas con el usuario_id
+    const { error: insertError } = await supabase
+      .from("citas_completadas")
+      .insert([
+        {
+          nombre: cita.nombre,
+          telefono: cita.telefono,
+          servicio: cita.servicio,
+          fecha: cita.fecha,
+          hora: cita.hora,
+          estado: "Completada",
+          usuario_id: userData.user.id,  // Asegurándonos de que el usuario_id se inserte
+        },
+      ]);
+
+    if (insertError) {
+      console.error("Error al insertar en citas_completadas:", insertError);
+      return;
+    }
+
+    // Eliminar la cita de la tabla citas
+    const { error: deleteError } = await supabase
+      .from("citas")
+      .delete()
+      .eq("id", id);
+
+    if (deleteError) {
+      console.error("Error al eliminar la cita:", deleteError);
+      return;
+    }
+
+    fetchCitas();
+    alert("Cita marcada como completada y movida correctamente.");
+  } catch (error) {
+    console.error("Error inesperado:", error);
+    alert("Hubo un problema al procesar la cita.");
+  }
+};
+
 
   return (
     <div style={{ backgroundColor: "black", color: "white", padding: "20px", minHeight: "100vh" }}>
