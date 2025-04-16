@@ -5,7 +5,6 @@ import { useRouter } from 'next/router';
 import { supabase } from '../lib/supabaseClient';
 
 export default function Login() {
-  const [showForm, setShowForm] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isRegistering, setIsRegistering] = useState(false);
@@ -18,7 +17,6 @@ export default function Login() {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
         setUser(session.user);
-        setShowForm(false);
         router.push("/user-panel");
       } else {
         setUser(null);
@@ -37,17 +35,33 @@ export default function Login() {
     };
   }, []);
 
-  const handleAccessClick = () => {
-    setShowForm(true);
-  };
-
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  let data, error;
+    let data, error;
 
-  if (isRegistering) {
-    const result = await supabase.auth.signUp({
+    if (isRegistering) {
+      const result = await supabase.auth.signUp({
+        email,
+        password,
+      });
+
+      data = result.data;
+      error = result.error;
+
+      if (error) {
+        alert('Error al registrar: ' + error.message);
+        console.error(error);
+        return;
+      }
+
+      // Redirigir tras el registro
+      router.push('/user-panel');
+      return;
+    }
+
+    // Si NO es registro, es login
+    const result = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -56,61 +70,39 @@ export default function Login() {
     error = result.error;
 
     if (error) {
-      alert('Error al registrar: ' + error.message);
+      alert('Credenciales incorrectas o cuenta no confirmada');
       console.error(error);
       return;
     }
 
-    // Redirigir tras el registro
-    router.push('/user-panel');
-    return;
-  }
+    const userId = data.user?.id;
+    if (!userId) {
+      alert('No se pudo obtener el usuario');
+      return;
+    }
 
-  // Si NO es registro, es login
-  const result = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
+    const { data: userProfile, error: profileError } = await supabase
+      .from('user_profiles')
+      .select('role')
+      .eq('user_id', userId)
+      .single();
 
-  data = result.data;
-  error = result.error;
+    if (profileError) {
+      console.error('Error al obtener el perfil de usuario:', profileError);
+      alert('No se pudo obtener el perfil del usuario.');
+      return;
+    }
 
-  if (error) {
-    alert('Credenciales incorrectas o cuenta no confirmada');
-    console.error(error);
-    return;
-  }
-
-  const userId = data.user?.id;
-  if (!userId) {
-    alert('No se pudo obtener el usuario');
-    return;
-  }
-
-  const { data: userProfile, error: profileError } = await supabase
-    .from('user_profiles')
-    .select('role')
-    .eq('user_id', userId)
-    .single();
-
-  if (profileError) {
-    console.error('Error al obtener el perfil de usuario:', profileError);
-    alert('No se pudo obtener el perfil del usuario.');
-    return;
-  }
-
-  if (userProfile?.role === 'admin') {
-    router.push('/administrador');
-  } else {
-    router.push('/user-panel');
-  }
-};
-
+    if (userProfile?.role === 'admin') {
+      router.push('/administrador');
+    } else {
+      router.push('/user-panel');
+    }
+  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setUser(null);
-    setShowForm(false);
   };
 
   if (loading) {
@@ -147,10 +139,39 @@ export default function Login() {
             {isRegistering ? 'Regístrate para gestionar tus citas' : 'Inicia sesión para gestionar tus citas'}
           </p>
 
-          {!showForm && !user && (
-            <button style={styles.button} onClick={handleAccessClick}>
-              Acceder
-            </button>
+          {!user && (
+            <>
+              <button style={styles.button} onClick={() => setIsRegistering(false)}>
+                Iniciar sesión
+              </button>
+
+              <form style={styles.formWrapper} onSubmit={handleSubmit}>
+                <input
+                  type="text"
+                  placeholder="Correo electrónico"
+                  style={styles.input}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+                <input
+                  type="password"
+                  placeholder="Contraseña"
+                  style={styles.input}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <button type="submit" style={styles.button}>
+                  {isRegistering ? 'Registrarse' : 'Entrar'}
+                </button>
+                <button
+                  type="button"
+                  style={{ ...styles.button, backgroundColor: '#444', color: '#fff' }}
+                  onClick={() => setIsRegistering(!isRegistering)}
+                >
+                  {isRegistering ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Regístrate'}
+                </button>
+              </form>
+            </>
           )}
 
           {user && (
@@ -160,35 +181,6 @@ export default function Login() {
             >
               Cerrar sesión
             </button>
-          )}
-
-          {showForm && !user && (
-            <form style={styles.formWrapper} onSubmit={handleSubmit}>
-              <input
-                type="text"
-                placeholder="Correo electrónico"
-                style={styles.input}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-              <input
-                type="password"
-                placeholder="Contraseña"
-                style={styles.input}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-              <button type="submit" style={styles.button}>
-                {isRegistering ? 'Registrarse' : 'Entrar'}
-              </button>
-              <button
-                type="button"
-                style={{ ...styles.button, backgroundColor: '#444', color: '#fff' }}
-                onClick={() => setIsRegistering(!isRegistering)}
-              >
-                {isRegistering ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Regístrate'}
-              </button>
-            </form>
           )}
         </div>
       </div>
@@ -260,3 +252,4 @@ const styles = {
     transition: 'all 0.3s ease',
   },
 };
+
