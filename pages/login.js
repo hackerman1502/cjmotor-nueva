@@ -40,37 +40,37 @@ export default function Login() {
 
     let data, error;
 
-if (isRegistering) {
-  const result = await supabase.auth.signUp({
-    email,
-    password,
-  });
+    if (isRegistering) {
+      // Crear usuario en auth
+      const result = await supabase.auth.signUp({
+        email,
+        password,
+      });
 
-  data = result.data;
-  error = result.error;
+      data = result.data;
+      error = result.error;
 
-  if (error) {
-    alert('Error al registrar: ' + error.message);
-    console.error('Detalles del error:', error);
-    return;
-  }
+      if (error) {
+        alert('Error al registrar: ' + error.message);
+        console.error('Detalles del error:', error);
+        return;
+      }
 
-  // Aquí, intentamos insertar en user_profiles después de crear al usuario
-  const { data: userProfile, error: profileError } = await supabase
-    .from('user_profiles')
-    .insert([{ user_id: data.user.id, role: 'user' }]);
+      // Aquí, insertamos el perfil en la tabla 'perfiles' después de crear al usuario
+      const { data: userProfile, error: profileError } = await supabase
+        .from('perfiles')
+        .insert([{ user_id: data.user.id, rol: 'user' }]);
 
-  if (profileError) {
-    console.error('Error al crear el perfil:', profileError);
-    alert('No se pudo crear el perfil de usuario.');
-    return;
-  }
+      if (profileError) {
+        console.error('Error al crear el perfil:', profileError);
+        alert('No se pudo crear el perfil de usuario.');
+        return;
+      }
 
-  // Redirigir tras el registro
-  router.push('/user-panel');
-  return;
-}
-
+      // Redirigir tras el registro
+      router.push('/user-panel');
+      return;
+    }
 
     // Si NO es registro, es login
     const result = await supabase.auth.signInWithPassword({
@@ -93,9 +93,10 @@ if (isRegistering) {
       return;
     }
 
+    // Obtener el rol desde la tabla 'perfiles'
     const { data: userProfile, error: profileError } = await supabase
-      .from('user_profiles')
-      .select('role')
+      .from('perfiles')
+      .select('rol')
       .eq('user_id', userId)
       .single();
 
@@ -105,7 +106,8 @@ if (isRegistering) {
       return;
     }
 
-    if (userProfile?.role === 'admin') {
+    // Redirigir según el rol del usuario
+    if (userProfile?.rol === 'admin') {
       router.push('/administrador');
     } else {
       router.push('/user-panel');
@@ -258,4 +260,3 @@ const styles = {
     transition: 'all 0.3s ease',
   },
 };
-
