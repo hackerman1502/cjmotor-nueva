@@ -1,5 +1,4 @@
-import { UserProvider } from "../context/UserContext"; // Esta ruta debe coincidir
-//import "../styles/globals.css"; // Si no tienes este archivo, comenta esta línea
+import { UserProvider } from "../context/UserContext";
 
 function MyApp({ Component, pageProps }) {
   return (
