@@ -5,7 +5,7 @@ import { createClient } from '@supabase/supabase-js';
 
 // Configuración de Supabase
 const supabaseUrl = "https://ynnclpisbiyaknnoijbd.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlubmNscGlzYml5YWtubm9pamJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ4MjQyNDQsImV4cCI6MjA2MDQwMDI0NH0.hcPF3V32hWOT7XM0OpE0XX6cbuMDEXxvf8Ha79dT7YE";
+const supabaseKey = "tu_clave_de_supabase_aqui";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function CitasPanel() {
@@ -56,6 +56,22 @@ export default function CitasPanel() {
       fetchCitas(); // Refrescar las citas después de la actualización
       setEditCita(null); // Volver a la vista de lista de citas
       alert("Cita actualizada correctamente.");
+    }
+  };
+
+  // Función para eliminar una cita
+  const handleDeleteCita = async (id) => {
+    const { error } = await supabase
+      .from("citas")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      console.error("Error al eliminar la cita:", error);
+      alert("Hubo un problema al eliminar la cita.");
+    } else {
+      fetchCitas(); // Refrescar las citas después de la eliminación
+      alert("Cita eliminada correctamente.");
     }
   };
 
@@ -211,33 +227,43 @@ export default function CitasPanel() {
                     </TableCell>
                     <TableCell>{cita.estado}</TableCell>
                     <TableCell>
-                      {cita.estado === "Pendiente" && !editCita && (
-                        <Button
-                          variant="contained"
-                          style={{ backgroundColor: "black", color: "white" }}
-                          onClick={() => handleMarkCompleted(cita.id)}
-                        >
-                          Marcar como Completada
-                        </Button>
-                      )}
+                      <div style={{ display: "flex", gap: "10px" }}>
+                        {cita.estado === "Pendiente" && !editCita && (
+                          <Button
+                            variant="contained"
+                            style={{ backgroundColor: "black", color: "white" }}
+                            onClick={() => handleMarkCompleted(cita.id)}
+                          >
+                            Marcar como Completada
+                          </Button>
+                        )}
 
-                      {editCita && editCita.id === cita.id ? (
+                        {editCita && editCita.id === cita.id ? (
+                          <Button
+                            variant="contained"
+                            style={{ backgroundColor: "black", color: "white" }}
+                            onClick={() => handleUpdateCita(cita.id, editCita.fecha, editCita.hora)}
+                          >
+                            Guardar
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="contained"
+                            style={{ backgroundColor: "black", color: "white" }}
+                            onClick={() => setEditCita(cita)} // Activar el modo de edición
+                          >
+                            Editar
+                          </Button>
+                        )}
+
                         <Button
                           variant="contained"
-                          style={{ backgroundColor: "black", color: "white" }}
-                          onClick={() => handleUpdateCita(cita.id, editCita.fecha, editCita.hora)}
+                          style={{ backgroundColor: "red", color: "white" }}
+                          onClick={() => handleDeleteCita(cita.id)} // Eliminar cita
                         >
-                          Guardar
+                          Eliminar
                         </Button>
-                      ) : (
-                        <Button
-                          variant="contained"
-                          style={{ backgroundColor: "black", color: "white" }}
-                          onClick={() => setEditCita(cita)} // Activar el modo de edición
-                        >
-                          Editar
-                        </Button>
-                      )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
