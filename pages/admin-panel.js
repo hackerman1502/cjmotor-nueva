@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent, IconButton, Dialog, DialogTitle, DialogContent, Typography, Button } from "@mui/material";
-import HomeIcon from "@mui/icons-material/Home";
+import { Card, CardContent, Dialog, DialogTitle, DialogContent, Typography, Button } from "@mui/material";
 import { useRouter } from "next/router";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -41,18 +40,24 @@ export default function AdminPanel() {
     fetchCitas();
   }, []);
 
-  const eventos = citas.map((cita) => ({
-    title: `${cita.nombre} - ${cita.servicio}`,
-    start: `${cita.fecha}T${cita.hora}:00`,
-    extendedProps: {
-      nombre: cita.nombre,
-      telefono: cita.telefono,
-      fecha: cita.fecha,
-      hora: cita.hora,
-      servicio: cita.servicio,
-      comentario: cita.comentario,
-    },
-  }));
+  // Formateamos las citas para FullCalendar
+  const eventos = citas.map((cita) => {
+    // Aseguramos que fecha y hora estén en el formato adecuado
+    const fechaHora = `${cita.fecha}T${cita.hora}:00`; // Por ejemplo: '2025-04-17T10:30:00'
+
+    return {
+      title: `${cita.nombre} - ${cita.servicio}`,
+      start: fechaHora,  // Fecha y hora combinadas
+      extendedProps: {
+        nombre: cita.nombre,
+        telefono: cita.telefono,
+        fecha: cita.fecha,
+        hora: cita.hora,
+        servicio: cita.servicio,
+        comentario: cita.comentario,
+      },
+    };
+  });
 
   const handleEventoClick = (info) => {
     setEventoSeleccionado(info.event.extendedProps);
