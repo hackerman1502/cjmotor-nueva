@@ -16,7 +16,6 @@ import {
 import { useRouter } from "next/router";
 import { useUser } from "../context/UserContext"; // 👈 Asegúrate de que esta ruta es correcta
 
-
 // Configuración de Supabase
 const supabaseUrl = "https://ynnclpisbiyaknnoijbd.supabase.co";
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlubmNscGlzYml5YWtubm9pamJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ4MjQyNDQsImV4cCI6MjA2MDQwMDI0NH0.hcPF3V32hWOT7XM0OpE0XX6cbuMDEXxvf8Ha79dT7YE";
@@ -27,9 +26,17 @@ export default function HistorialReparaciones() {
   const { user } = useUser(); // 👈 Trae el usuario desde el contexto
   const router = useRouter();
 
+  // Verificación si el usuario no está logueado
+  useEffect(() => {
+    if (!user) {
+      router.push('/login'); // Redirigir al login si no hay usuario
+    }
+  }, [user, router]);
+
+  // Fetch de las citas completadas
   useEffect(() => {
     const fetchCitasCompletadas = async () => {
-      if (!user) return;
+      if (!user) return; // Asegúrate de que haya un usuario antes de hacer la consulta
 
       const { data, error } = await supabase
         .from("citas_completadas")
@@ -109,5 +116,3 @@ export default function HistorialReparaciones() {
     </div>
   );
 }
-
-
