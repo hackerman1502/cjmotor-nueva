@@ -14,6 +14,7 @@ import {
   Button,
 } from "@mui/material";
 import { useRouter } from "next/router";
+import { useUser } from "../context/UserContext"; // Importa el hook useUser
 
 // Configuración de Supabase
 const supabaseUrl = "https://lslvykkxyqtkcyrxxzey.supabase.co";
@@ -21,15 +22,13 @@ const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function HistorialReparaciones() {
-  const [reparaciones, setReparaciones] = useState([]); // Usamos setReparaciones aquí
+  const [reparaciones, setReparaciones] = useState([]);
+  const { user } = useUser(); // Obtén el usuario logueado desde el contexto
   const router = useRouter();
 
   useEffect(() => {
     const fetchCitasCompletadas = async () => {
       try {
-        // Verifica si el usuario está logueado
-        const user = supabase.auth.user();
-        
         if (!user) {
           console.error("No hay usuario logueado.");
           alert("No estás logueado.");
@@ -37,21 +36,19 @@ export default function HistorialReparaciones() {
         }
 
         const userId = user.id;
-
-        // Verificar que estamos obteniendo el userId correctamente
         console.log("ID del usuario logueado:", userId);
 
         // Obtener las citas completadas de este usuario
         const { data, error } = await supabase
           .from("citas_completadas")
           .select("*")
-          .eq("usuario_id", userId); // Filtra las reparaciones por el ID del usuario
+          .eq("usuario_id", userId);
 
         if (error) {
           console.error("Error al obtener las citas completadas:", error);
         } else {
-          console.log("Reparaciones recuperadas:", data); // Muestra las reparaciones obtenidas
-          setReparaciones(data); // Establece las reparaciones en el estado
+          console.log("Reparaciones recuperadas:", data);
+          setReparaciones(data);
         }
       } catch (err) {
         console.error("Hubo un error al intentar recuperar las reparaciones:", err);
@@ -59,11 +56,10 @@ export default function HistorialReparaciones() {
     };
 
     fetchCitasCompletadas();
-  }, []);
+  }, [user]);
 
   return (
     <div style={{ backgroundColor: "black", color: "white", padding: "20px", minHeight: "100vh" }}>
-      {/* Header con botón atrás y logo */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
         <Button
           variant="contained"
@@ -75,7 +71,13 @@ export default function HistorialReparaciones() {
         <img src="/logo-cjmotor.png" alt="Logo" style={{ width: "130px", height: "auto" }} />
       </div>
 
-      {/* Caja blanca con historial de reparaciones */}
+      <div>
+        {/* Mostrar el nombre del usuario logueado */}
+        {user && <Typography variant="h6" style={{ textAlign: "center", marginBottom: "20px" }}>
+          Bienvenido, {user.email} {/* O usa user.username si lo tienes */}
+        </Typography>}
+      </div>
+
       <Card style={{ backgroundColor: "white", color: "black", padding: "20px" }}>
         <CardContent>
           <Typography variant="h5" style={{ textAlign: "center", marginBottom: "20px" }}>
