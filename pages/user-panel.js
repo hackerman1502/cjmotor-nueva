@@ -44,8 +44,8 @@ const styles = {
     position: "absolute",
     top: "20px",
     right: "20px",
-    backgroundColor: "white",    // Fondo blanco
-    color: "black",              // Letras negras
+    backgroundColor: "white",
+    color: "black",
     fontSize: "0.75rem",
     padding: "6px 12px",
     borderRadius: "6px",
