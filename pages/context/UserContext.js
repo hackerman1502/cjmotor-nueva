@@ -1,6 +1,6 @@
 // context/UserContext.js
 
-import { createContext, useState, useEffect, useContext } from "react";
+import { createContext, useState, useContext, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 
 // Configuración de Supabase
@@ -8,28 +8,26 @@ const supabaseUrl = "https://ynnclpisbiyaknnoijbd.supabase.co";
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlubmNscGlzYml5YWtubm9pamJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ4MjQyNDQsImV4cCI6MjA2MDQwMDI0NH0.hcPF3V32hWOT7XM0OpE0XX6cbuMDEXxvf8Ha79dT7YE";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Crear contexto de usuario
+// Crear el contexto de usuario
 const UserContext = createContext();
 
-// Proveedor de contexto
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    // Verificar si el usuario ya está logueado
-    const session = supabase.auth.session();
+    const session = supabase.auth.session(); // Obtiene la sesión actual del usuario
+
     if (session) {
       setUser(session.user);
     }
 
-    // Escuchar cambios de sesión
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session ? session.user : null);
+    // Escuchar cambios en la sesión
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user || null);
     });
 
-    // Limpiar el listener cuando el componente se desmonte
     return () => {
-      authListener?.unsubscribe();
+      listener?.unsubscribe();
     };
   }, []);
 
@@ -40,7 +38,11 @@ export const UserProvider = ({ children }) => {
   );
 };
 
-// Hook para acceder al usuario logueado en cualquier parte de la app
+// Crear un hook para acceder al usuario
 export const useUser = () => {
-  return useContext(UserContext);
+  const context = useContext(UserContext);
+  if (!context) {
+    throw new Error("useUser debe ser usado dentro de un UserProvider");
+  }
+  return context;
 };
