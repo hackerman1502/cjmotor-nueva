@@ -1,25 +1,24 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import { Button, Typography, Card, CardContent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
 import { useUser } from "../context/UserContext"; // Asegúrate de que esta ruta es correcta
-import { Button, Typography, Card, CardContent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material"; // Añade Card aquí
 import { supabase } from "../lib/supabaseClient";
 
 export default function HistorialReparaciones() {
   const [reparaciones, setReparaciones] = useState([]);
-  const { user } = useUser(); // 👈 Trae el usuario desde el contexto
+  const { user } = useUser(); // Obtiene el usuario desde el contexto
   const router = useRouter();
 
-  // Verificación si el usuario no está logueado
   useEffect(() => {
     if (!user) {
-      router.push('/login'); // Redirigir al login si no hay usuario
+      // Si el usuario no está logueado, redirige al login
+      router.push('/login');
     }
   }, [user, router]);
 
-  // Fetch de las citas completadas
   useEffect(() => {
     const fetchCitasCompletadas = async () => {
-      if (!user) return; // Asegúrate de que haya un usuario antes de hacer la consulta
+      if (!user) return;
 
       const { data, error } = await supabase
         .from("citas_completadas")
@@ -33,7 +32,9 @@ export default function HistorialReparaciones() {
       }
     };
 
-    fetchCitasCompletadas();
+    if (user) {
+      fetchCitasCompletadas();
+    }
   }, [user]);
 
   return (
@@ -49,7 +50,6 @@ export default function HistorialReparaciones() {
         <img src="/logo-cjmotor.png" alt="Logo" style={{ width: "130px", height: "auto" }} />
       </div>
 
-      {/* Mostrar el email del usuario */}
       {user && (
         <Typography variant="h6" style={{ textAlign: "center", marginBottom: "20px" }}>
           Bienvenido, {user.email}
