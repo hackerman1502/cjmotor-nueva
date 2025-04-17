@@ -20,3 +20,19 @@ export function UserProvider({ children }) {
     getUserSession();
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null);
+    });
+
+    return () => {
+      listener?.subscription?.unsubscribe();
+    };
+  }, []);
+
+  return (
+    <UserContext.Provider value={{ user }}>
+      {children}
+    </UserContext.Provider>
+  );
+}
+
+export const useUser = () => useContext(UserContext);
