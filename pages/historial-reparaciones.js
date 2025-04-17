@@ -16,6 +16,18 @@ import {
 import { useRouter } from "next/router";
 import { useUser } from "../context/UserContext"; // 👈 Asegúrate de que esta ruta es correcta
 
+const { user } = useUser();
+
+useEffect(() => {
+  if (!user) {
+    console.warn("No hay sesión activa");
+    return;
+  }
+
+  // Ahora puedes usar user.id
+}, [user]);
+
+
 // Configuración de Supabase
 const supabaseUrl = "https://ynnclpisbiyaknnoijbd.supabase.co";
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlubmNscGlzYml5YWtubm9pamJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ4MjQyNDQsImV4cCI6MjA2MDQwMDI0NH0.hcPF3V32hWOT7XM0OpE0XX6cbuMDEXxvf8Ha79dT7YE";
