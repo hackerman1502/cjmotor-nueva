@@ -11,8 +11,8 @@ const styles = {
     minHeight: "100vh",
     display: "flex",
     flexDirection: "column",
-    alignItems: "center",
     fontFamily: "'Poppins', sans-serif",
+    position: "relative",
   },
   header: {
     display: "flex",
@@ -34,18 +34,21 @@ const styles = {
   button: {
     backgroundColor: "white",
     color: "black",
-    margin: "10px 0",
+    margin: "10px auto",
     width: "200px",
     borderRadius: "8px",
     fontWeight: "500",
   },
   logoutButton: {
-    backgroundColor: "#ff1744", // rojo fuerte
+    position: "absolute",
+    top: "20px",
+    right: "20px",
+    backgroundColor: "#444",
     color: "white",
-    marginTop: "40px",
-    width: "200px",
-    fontWeight: "bold",
-    borderRadius: "8px",
+    fontSize: "0.75rem",
+    padding: "6px 12px",
+    borderRadius: "6px",
+    textTransform: "none",
   },
 };
 
@@ -59,6 +62,11 @@ export default function UserPanel() {
 
   return (
     <div style={styles.container}>
+      {/* 🔓 Botón Log out en la esquina superior derecha */}
+      <Button variant="contained" style={styles.logoutButton} onClick={handleLogout}>
+        Log out
+      </Button>
+
       <div style={styles.header}>
         <Image
           src="/logo-cjmotor.png"
@@ -84,11 +92,6 @@ export default function UserPanel() {
 
       <Button variant="contained" style={styles.button} onClick={() => router.push("/mis-citas")}>
         Mis Citas
-      </Button>
-
-      {/* 🔴 Botón visible para cerrar sesión */}
-      <Button variant="contained" style={styles.logoutButton} onClick={handleLogout}>
-        🔓 Cerrar sesión
       </Button>
     </div>
   );
