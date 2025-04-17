@@ -17,11 +17,11 @@ export default function AdminPanel() {
   const [eventoSeleccionado, setEventoSeleccionado] = useState(null);
   const router = useRouter();
 
-    // Función para redirigir a la página principal
-    const handleGoHome = () => {
-      router.push('/administrador');  // Redirige a la página principal
-    };
-    
+  // Función para redirigir a la página principal
+  const handleGoHome = () => {
+    router.push('/administrador');  // Redirige a la página principal
+  };
+
   // Función para obtener las citas
   const fetchCitas = async () => {
     const { data, error } = await supabase
@@ -64,13 +64,13 @@ export default function AdminPanel() {
 
   const handleDelete = async () => {
     if (!eventoSeleccionado) return;
-  
+
     const { data, error } = await supabase
       .from("citas")
       .delete()
       .eq("fecha", eventoSeleccionado.fecha)
       .eq("hora", eventoSeleccionado.hora);
-  
+
     if (error) {
       console.error("Error al eliminar la cita:", error);
       alert("Error al eliminar la cita");
@@ -82,21 +82,21 @@ export default function AdminPanel() {
   };
 
   return (
-    <div style={{ backgroundColor: "black", color: "white", padding: "20px", minHeight: "100vh" }}>   
-          {/* Encabezado con botón atrás y logo */}
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
-    <Button
-      variant="contained"
-      onClick={() => router.push("/administrador")}
-      style={{
-        backgroundColor: "white",  // Fondo blanco
-        color: "black",            // Texto negro
-        border: "1px solid #ccc",  // Borde opcional (puedes personalizarlo)
-        marginRight: "10px",       // Mantener el margen
-      }}
-    >
-      Atrás
-    </Button>
+    <div style={{ backgroundColor: "black", color: "white", padding: "20px", minHeight: "100vh" }}>
+      {/* Encabezado con botón atrás y logo */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+        <Button
+          variant="contained"
+          onClick={handleGoHome}
+          style={{
+            backgroundColor: "white",  // Fondo blanco
+            color: "black",            // Texto negro
+            border: "1px solid #ccc",  // Borde opcional (puedes personalizarlo)
+            marginRight: "10px",       // Mantener el margen
+          }}
+        >
+          Atrás
+        </Button>
         <img src="/logo-cjmotor.png" alt="Logo" style={{ width: "130px", height: "auto" }} />
       </div>
 
@@ -135,7 +135,7 @@ export default function AdminPanel() {
               )}
               <Button
                 color="secondary"
-                onClick={() => handleDelete(eventoSeleccionado)}
+                onClick={handleDelete}
                 style={{ marginTop: "20px" }}
               >
                 Eliminar Cita
@@ -144,7 +144,6 @@ export default function AdminPanel() {
           )}
         </DialogContent>
       </Dialog>
-      
     </div>
   );
 }
