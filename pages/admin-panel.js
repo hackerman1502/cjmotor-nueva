@@ -41,36 +41,33 @@ export default function AdminPanel() {
   }, []);
 
   // Formateamos las citas para FullCalendar
-  const eventos = citas.map((cita) => {
-    // Aseguramos que fecha y hora estén en el formato adecuado
-    const fechaHora = `${cita.fecha}T${cita.hora}:00`; // Por ejemplo: '2025-04-17T10:30:00'
-  
-    console.log("Evento formateado:", {
+const eventos = citas.map((cita) => {
+  // Aseguramos que fecha y hora estén en el formato adecuado
+  // Si la hora tiene segundos (ejemplo: "09:00:00"), la cortamos a "09:00"
+  let hora = cita.hora;
+
+  // Asegúrate de que no haya más de dos segmentos en la hora (HH:mm)
+  if (hora && hora.split(":").length > 2) {
+    hora = hora.split(":").slice(0, 2).join(":"); // "HH:mm" sin segundos
+  }
+
+  // Ahora formateamos la fecha completa
+  const fechaHora = `${cita.fecha}T${hora}:00`; // Por ejemplo: '2025-04-17T09:00:00'
+
+  return {
     title: `${cita.nombre} - ${cita.servicio}`,
-    start: fechaHora,
+    start: fechaHora,  // Fecha y hora combinadas
     extendedProps: {
       nombre: cita.nombre,
       telefono: cita.telefono,
       fecha: cita.fecha,
-      hora: cita.hora,
+      hora: hora,
       servicio: cita.servicio,
       comentario: cita.comentario,
     },
-  });
+  };
+});
 
-    return {
-      title: `${cita.nombre} - ${cita.servicio}`,
-      start: fechaHora,  // Fecha y hora combinadas
-      extendedProps: {
-        nombre: cita.nombre,
-        telefono: cita.telefono,
-        fecha: cita.fecha,
-        hora: cita.hora,
-        servicio: cita.servicio,
-        comentario: cita.comentario,
-      },
-    };
-  });
 
 
 console.log("Eventos para FullCalendar:", eventos);  // Verifica aquí que los eventos tengan el formato adecuado
