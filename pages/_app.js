@@ -1,12 +1,10 @@
-// pages/_app.js
-import { UserProvider } from "../context/UserContext"; // Asegúrate de que la ruta sea correcta
+import { UserProvider } from "../context/UserContext"; // importamos el provider
+import "../styles/globals.css"; // si no tienes este archivo, lo comentamos
 
-function MyApp({ Component, pageProps }) {
+export default function MyApp({ Component, pageProps }) {
   return (
-    <UserProvider>  {/* Envuelve la aplicación con el UserProvider */}
+    <UserProvider>
       <Component {...pageProps} />
     </UserProvider>
   );
 }
-
-export default MyApp;
