@@ -1,8 +1,9 @@
 import { Button } from "@mui/material";
 import { useRouter } from "next/router";
 import Image from "next/image";
+import { useUser } from "../context/UserContext"; // Asegúrate de importar el hook
+import { useEffect } from "react";
 import { supabase } from "../lib/supabaseClient";
-
 
 const styles = {
   container: {
@@ -43,13 +44,21 @@ const styles = {
 };
 
 export default function UserPanel() {
+  const { user } = useUser(); // Obtener el usuario logueado
   const router = useRouter();
 
-    // Función para redirigir a la página principal
-   const handleGoHome = async () => {
-  await supabase.auth.signOut(); // Cierra sesión
-  router.push('/login');         // Vuelve al login
-};
+  // Función para redirigir a la página principal y cerrar sesión
+  const handleGoHome = async () => {
+    await supabase.auth.signOut(); // Cierra sesión
+    router.push('/login');         // Vuelve al login
+  };
+
+  // Verificar si el usuario está logueado y redirigir si no lo está
+  useEffect(() => {
+    if (!user) {
+      router.push('/login'); // Si no hay usuario, redirigir al login
+    }
+  }, [user, router]);
 
   return (
     <div style={styles.container}>
@@ -64,37 +73,42 @@ export default function UserPanel() {
         <p style={styles.title}>Bienvenido al panel de usuario</p>
       </div>
 
-      <Button
-        variant="contained"
-        style={styles.button}
-        onClick={() => router.push("/historial-reparaciones")}
-      >
-        Historial reparaciones
-      </Button>
+      {/* Mostrar botones solo si el usuario está logueado */}
+      {user && (
+        <>
+          <Button
+            variant="contained"
+            style={styles.button}
+            onClick={() => router.push("/historial-reparaciones")}
+          >
+            Historial reparaciones
+          </Button>
 
-      <Button
-        variant="contained"
-        style={styles.button}
-        onClick={() => router.push("/perfil")}
-      >
-        Perfil
-      </Button>
+          <Button
+            variant="contained"
+            style={styles.button}
+            onClick={() => router.push("/perfil")}
+          >
+            Perfil
+          </Button>
 
-      <Button
-  variant="contained"
-  style={styles.button}
-  onClick={() => router.push("/")}
->
-  Solicitar cita
-</Button>
-         <Button
-  variant="contained"
-  style={styles.button}
-  onClick={() => router.push("/mis-citas")}
->
-  Mis Citas
-</Button>
-<div style={{ display: "flex", justifyContent: "flex-start", marginTop: "20px" }}>
+          <Button
+            variant="contained"
+            style={styles.button}
+            onClick={() => router.push("/")}
+          >
+            Solicitar cita
+          </Button>
+
+          <Button
+            variant="contained"
+            style={styles.button}
+            onClick={() => router.push("/mis-citas")}
+          >
+            Mis Citas
+          </Button>
+
+          <div style={{ display: "flex", justifyContent: "flex-start", marginTop: "20px" }}>
             <Button
               variant="contained"
               style={{
@@ -106,8 +120,10 @@ export default function UserPanel() {
               Volver a login
             </Button>
           </div>
-    </div> 
+        </>
+      )}
+    </div>
   );
-
 }
+
 
