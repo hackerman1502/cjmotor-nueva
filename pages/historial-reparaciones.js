@@ -1,8 +1,7 @@
-// HistorialReparaciones.js
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { useUser } from "../context/UserContext"; // Asegúrate de que esta ruta es correcta
-import { Button, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
+import { Button, Typography, Card, CardContent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material"; // Añade Card aquí
 import { supabase } from "../lib/supabaseClient";
 
 export default function HistorialReparaciones() {
