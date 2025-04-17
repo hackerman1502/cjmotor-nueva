@@ -15,8 +15,9 @@ export default function Login() {
     setShowForm(true);
   };
 
-  const handleSubmit = async (e) => {
+ const handleSubmit = async (e) => {
   e.preventDefault();
+  console.log("Se hizo submit");
 
   if (email === 'admin' && password === 'admin') {
     router.push('/administrador');
@@ -41,9 +42,11 @@ export default function Login() {
     alert('Credenciales incorrectas o cuenta no confirmada');
     console.error(error);
   } else {
+    console.log("Login correcto, redirigiendo");
     router.push('/user-panel');
   }
 };
+
 
   return (
     <>
