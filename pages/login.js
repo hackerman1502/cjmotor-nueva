@@ -16,34 +16,34 @@ export default function Login() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-  
-    if (email === 'admin' && password === 'admin') {
-      router.push('/administrador');
-      return;
-    }
-  
-    let data, error;
-  
-    if (isRegistering) {
-      ({ data, error } = await supabase.auth.signUp({
-        email,
-        password,
-      }));
-    } else {
-      ({ data, error } = await supabase.auth.signIn({
-        email,
-        password,
-      }));
-    }
-  
-    if (error) {
-      alert('Credenciales incorrectas o cuenta no confirmada');
-      console.error(error);
-    } else {
-      router.push('/user-panel');
-    }
-  };
+  e.preventDefault();
+
+  if (email === 'admin' && password === 'admin') {
+    router.push('/administrador');
+    return;
+  }
+
+  let data, error;
+
+  if (isRegistering) {
+    ({ data, error } = await supabase.auth.signUp({
+      email,
+      password,
+    }));
+  } else {
+    ({ data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    }));
+  }
+
+  if (error) {
+    alert('Credenciales incorrectas o cuenta no confirmada');
+    console.error(error);
+  } else {
+    router.push('/user-panel');
+  }
+};
 
   return (
     <>
