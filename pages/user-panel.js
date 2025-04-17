@@ -43,12 +43,13 @@ const styles = {
     position: "absolute",
     top: "20px",
     right: "20px",
-    backgroundColor: "#444",
-    color: "white",
+    backgroundColor: "white",    // Fondo blanco
+    color: "black",              // Letras negras
     fontSize: "0.75rem",
     padding: "6px 12px",
     borderRadius: "6px",
     textTransform: "none",
+    fontWeight: "500",
   },
 };
 
