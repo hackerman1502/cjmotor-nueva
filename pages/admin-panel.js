@@ -59,6 +59,9 @@ export default function AdminPanel() {
     };
   });
 
+
+console.log("Eventos para FullCalendar:", eventos);  // Verifica aquí que los eventos tengan el formato adecuado
+
   const handleEventoClick = (info) => {
     setEventoSeleccionado(info.event.extendedProps);
   };
