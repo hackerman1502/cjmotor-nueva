@@ -16,17 +16,6 @@ import {
 import { useRouter } from "next/router";
 import { useUser } from "../context/UserContext"; // 👈 Asegúrate de que esta ruta es correcta
 
-const { user } = useUser();
-
-useEffect(() => {
-  if (!user) {
-    console.warn("No hay sesión activa");
-    return;
-  }
-
-  // Ahora puedes usar user.id
-}, [user]);
-
 
 // Configuración de Supabase
 const supabaseUrl = "https://ynnclpisbiyaknnoijbd.supabase.co";
