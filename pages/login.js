@@ -15,38 +15,41 @@ export default function Login() {
     setShowForm(true);
   };
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
-  console.log("Se hizo submit");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log("Se hizo submit");
 
-  if (email === 'admin' && password === 'admin') {
-    router.push('/administrador');
-    return;
-  }
+    if (email === 'admin' && password === 'admin') {
+      router.push('/administrador');
+      return;
+    }
 
-  let data, error;
+    let data, error;
 
-  if (isRegistering) {
-    ({ data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    }));
-  } else {
-    ({ data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    }));
-  }
+    if (isRegistering) {
+      const result = await supabase.auth.signUp({
+        email,
+        password,
+      });
+      data = result.data;
+      error = result.error;
+    } else {
+      const result = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      data = result.data;
+      error = result.error;
+    }
 
-  if (error) {
-    alert('Credenciales incorrectas o cuenta no confirmada');
-    console.error(error);
-  } else {
-    console.log("Login correcto, redirigiendo");
-    router.push('/user-panel');
-  }
-};
-
+    if (error) {
+      alert('Credenciales incorrectas o cuenta no confirmada');
+      console.error(error);
+    } else {
+      console.log("Login correcto, redirigiendo");
+      router.push('/user-panel');
+    }
+  };
 
   return (
     <>
@@ -178,3 +181,4 @@ const styles = {
     transition: 'all 0.3s ease',
   },
 };
+
