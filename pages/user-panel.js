@@ -2,7 +2,7 @@ import { Button } from "@mui/material";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import { supabase } from "../lib/supabaseClient";
-import { useState, useEffect } from "react";  // Importa useState y useEffect
+import { useState, useEffect } from "react";
 
 const styles = {
   container: {
@@ -121,3 +121,4 @@ export default function UserPanel() {
     </div>
   );
 }
+
