@@ -1,3 +1,4 @@
+// pages/historial-reparaciones.js
 import { useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 import {
@@ -27,14 +28,14 @@ export default function HistorialReparaciones() {
   const router = useRouter();
 
   useEffect(() => {
+    if (!user) {
+      console.error("No hay usuario logueado.");
+      alert("No estás logueado.");
+      return;
+    }
+
     const fetchCitasCompletadas = async () => {
       try {
-        if (!user) {
-          console.error("No hay usuario logueado.");
-          alert("No estás logueado.");
-          return;
-        }
-
         const userId = user.id;
         console.log("ID del usuario logueado:", userId);
 
@@ -58,6 +59,16 @@ export default function HistorialReparaciones() {
     fetchCitasCompletadas();
   }, [user]);
 
+  if (!user) {
+    return (
+      <div style={{ backgroundColor: "black", color: "white", padding: "20px", minHeight: "100vh" }}>
+        <Typography variant="h6" style={{ textAlign: "center" }}>
+          No estás logueado.
+        </Typography>
+      </div>
+    );
+  }
+
   return (
     <div style={{ backgroundColor: "black", color: "white", padding: "20px", minHeight: "100vh" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
@@ -73,9 +84,9 @@ export default function HistorialReparaciones() {
 
       <div>
         {/* Mostrar el nombre del usuario logueado */}
-        {user && <Typography variant="h6" style={{ textAlign: "center", marginBottom: "20px" }}>
-          Bienvenido, {user.email} {/* O usa user.username si lo tienes */}
-        </Typography>}
+        <Typography variant="h6" style={{ textAlign: "center", marginBottom: "20px" }}>
+          Bienvenido, {user.email}
+        </Typography>
       </div>
 
       <Card style={{ backgroundColor: "white", color: "black", padding: "20px" }}>
