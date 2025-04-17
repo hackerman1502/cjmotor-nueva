@@ -39,11 +39,13 @@ const styles = {
     borderRadius: "8px",
     fontWeight: "500",
   },
-  logout: {
-    marginTop: "30px",
-    backgroundColor: "#e53935",
+  logoutButton: {
+    backgroundColor: "#ff1744", // rojo fuerte
     color: "white",
-    fontWeight: "500",
+    marginTop: "40px",
+    width: "200px",
+    fontWeight: "bold",
+    borderRadius: "8px",
   },
 };
 
@@ -51,8 +53,8 @@ export default function UserPanel() {
   const router = useRouter();
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();  // Cierra la sesión de Supabase
-    router.push("/login");          // Redirige al login
+    await supabase.auth.signOut();
+    router.push("/login");
   };
 
   return (
@@ -84,9 +86,9 @@ export default function UserPanel() {
         Mis Citas
       </Button>
 
-      {/* Botón para cerrar sesión */}
-      <Button variant="contained" style={{ ...styles.button, ...styles.logout }} onClick={handleLogout}>
-        Cerrar sesión
+      {/* 🔴 Botón visible para cerrar sesión */}
+      <Button variant="contained" style={styles.logoutButton} onClick={handleLogout}>
+        🔓 Cerrar sesión
       </Button>
     </div>
   );
