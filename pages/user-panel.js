@@ -2,6 +2,7 @@ import { Button } from "@mui/material";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import { supabase } from "../lib/supabaseClient";
+import { useState, useEffect } from "react";  // Importa useState y useEffect
 
 const styles = {
   container: {
@@ -54,8 +55,24 @@ const styles = {
 };
 
 export default function UserPanel() {
+  const [user, setUser] = useState(null);  // Estado para almacenar el usuario logueado
   const router = useRouter();
 
+  // Obtener la sesión y el usuario logueado
+  const getUser = async () => {
+    const session = supabase.auth.session(); // Obtener la sesión activa
+    if (session) {
+      setUser(session.user); // Si hay sesión, asignamos el usuario al estado
+    } else {
+      setUser(null); // Si no hay sesión, lo dejamos en null
+    }
+  };
+
+  useEffect(() => {
+    getUser();  // Al cargar el componente, obtener el usuario
+  }, []);
+
+  // Función para cerrar sesión
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.push("/login");
@@ -77,6 +94,13 @@ export default function UserPanel() {
           style={styles.logo}
         />
         <p style={styles.title}>Bienvenido al panel de usuario</p>
+
+        {/* Mostrar el nombre o email del usuario si está logueado */}
+        {user ? (
+          <p style={styles.title}>Usuario logueado: {user.email}</p>  {/* Mostrar el email del usuario */}
+        ) : (
+          <p style={styles.title}>No has iniciado sesión</p>
+        )}
       </div>
 
       <Button variant="contained" style={styles.button} onClick={() => router.push("/historial-reparaciones")}>
@@ -97,5 +121,6 @@ export default function UserPanel() {
     </div>
   );
 }
+
 
 
