@@ -1,29 +1,22 @@
-import React, { useState, useEffect, createContext, useContext } from "react";
+// context/UserContext.js
+import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 
 const UserContext = createContext();
 
-export const UserProvider = ({ children }) => {
+export function UserProvider({ children }) {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const session = supabase.auth.session();
-    if (session) {
-      setUser(session.user);
-    }
-
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setUser(session?.user || null);
+    const getUserSession = async () => {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error("Error al obtener el usuario logueado:", error);
+      } else {
+        setUser(data.session?.user || null);
       }
-    );
-
-    return () => {
-      authListener?.unsubscribe();
     };
-  }, []);
 
-  return <UserContext.Provider value={{ user }}>{children}</UserContext.Provider>;
-};
+    getUserSession();
 
-export const useUser = () => useContext(UserContext);
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
