@@ -44,6 +44,19 @@ export default function AdminPanel() {
   const eventos = citas.map((cita) => {
     // Aseguramos que fecha y hora estén en el formato adecuado
     const fechaHora = `${cita.fecha}T${cita.hora}:00`; // Por ejemplo: '2025-04-17T10:30:00'
+  
+    console.log("Evento formateado:", {
+    title: `${cita.nombre} - ${cita.servicio}`,
+    start: fechaHora,
+    extendedProps: {
+      nombre: cita.nombre,
+      telefono: cita.telefono,
+      fecha: cita.fecha,
+      hora: cita.hora,
+      servicio: cita.servicio,
+      comentario: cita.comentario,
+    },
+  });
 
     return {
       title: `${cita.nombre} - ${cita.servicio}`,
