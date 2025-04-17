@@ -27,16 +27,16 @@ export default function HistorialReparaciones() {
   useEffect(() => {
     const fetchCitasCompletadas = async () => {
       try {
-        // Obtener el usuario logueado
-        const { data: userData, error: userError } = await supabase.auth.getUser();
+        // Verifica si el usuario está logueado
+        const user = supabase.auth.user();
         
-        if (userError || !userData?.user) {
-          console.error("Error al obtener el usuario logueado:", userError);
-          alert("No se pudo obtener el usuario logueado.");
+        if (!user) {
+          console.error("No hay usuario logueado.");
+          alert("No estás logueado.");
           return;
         }
 
-        const userId = userData.user.id;
+        const userId = user.id;
 
         // Verificar que estamos obteniendo el userId correctamente
         console.log("ID del usuario logueado:", userId);
