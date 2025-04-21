@@ -1,162 +1,128 @@
-import { useState, useEffect } from "react";
-import { Button, Card, CardContent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Dialog, DialogTitle, DialogContent, Typography, MenuItem, Select, FormControl, InputLabel } from "@mui/material";
-import { supabase } from "../lib/supabaseClient";
+import { useEffect, useState } from "react";
+import { Card, CardContent, Typography, Button, MenuItem, Select } from "@mui/material";
 import { useRouter } from "next/router";
+import { createClient } from "@supabase/supabase-js";
+
+// Config Supabase
+const supabaseUrl = "https://ynnclpisbiyaknnoijbd.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlubmNscGlzYml5YWtubm9pamJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ4MjQyNDQsImV4cCI6MjA2MDQwMDI0NH0.hcPF3V32hWOT7XM0OpE0XX6cbuMDEXxvf8Ha79dT7YE";
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function TrabajosCompletados() {
-  const [jobs, setJobs] = useState([]);
-  const [filter, setFilter] = useState("all");
-  const [selectedJob, setSelectedJob] = useState(null);
+  const [trabajos, setTrabajos] = useState([]);
+  const [filtro, setFiltro] = useState("Todos");
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchJobs = async () => {
-      const { data, error } = await supabase
-        .from("citas_completadas")
-        .select("*");
-
-      if (!error) {
-        setJobs(data);
-      } else {
-        console.error(error);
-      }
-    };
-
-    fetchJobs();
-  }, []);
-
-  const handlePaymentStatusChange = async (jobId, isPaid) => {
-    const { error } = await supabase
+  const fetchTrabajos = async () => {
+    const { data, error } = await supabase
       .from("citas_completadas")
-      .update({ estado_pago: isPaid ? "pagado" : "pendiente" })
-      .eq("id", jobId);
+      .select("*")
+      .order("fecha", { ascending: false });
 
-    if (!error) {
-      setJobs(jobs.map((job) =>
-        job.id === jobId ? { ...job, estado_pago: isPaid ? "pagado" : "pendiente" } : job
-      ));
+    if (error) {
+      console.error("Error al obtener trabajos:", error);
     } else {
-      alert("Error al actualizar el estado.");
+      setTrabajos(data);
     }
   };
 
-  const filteredJobs = filter === "all" ? jobs : jobs.filter((job) => job.estado_pago === filter);
+  const marcarComoPagado = async (id) => {
+    const { error } = await supabase
+      .from("citas_completadas")
+      .update({ estado_pago: "Pagado" })
+      .eq("id", id);
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push("/login");
+    if (error) {
+      console.error("Error al actualizar estado de pago:", error);
+      alert("Hubo un error al actualizar");
+    } else {
+      alert("Estado actualizado a 'Pagado'");
+      fetchTrabajos();
+    }
   };
 
-  const handleJobClick = (job) => {
-    setSelectedJob(job);
-  };
+  useEffect(() => {
+    fetchTrabajos();
+  }, []);
 
-  const handleCloseDialog = () => {
-    setSelectedJob(null);
-  };
+  const trabajosFiltrados =
+    filtro === "Todos"
+      ? trabajos
+      : trabajos.filter((t) => t.estado_pago === filtro);
 
   return (
-    <div style={{ backgroundColor: "black", color: "white", padding: "20px", minHeight: "100vh" }}>
-      <Button
-        variant="contained"
-        onClick={handleLogout}
-        style={{
-          position: "absolute",
-          top: "20px",
-          right: "20px",
-          backgroundColor: "white",
-          color: "black",
-          fontSize: "0.75rem",
-          padding: "6px 12px",
-          borderRadius: "6px",
-          textTransform: "none",
-          fontWeight: "500",
-        }}
-      >
-        Log out
-      </Button>
-
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px" }}>
-        <img src="/logo-cjmotor.png" alt="Logo CJ MOTOR" style={{ width: "130px", height: "auto" }} />
+    <div style={{ backgroundColor: "black", color: "white", minHeight: "100vh", padding: "20px" }}>
+      {/* Header con botón atrás y logo */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+        <Button
+          variant="contained"
+          onClick={() => router.push("/administrador")}
+          style={{
+            backgroundColor: "white",
+            color: "black",
+          }}
+        >
+          Atrás
+        </Button>
+        <img src="/logo-cjmotor.png" alt="Logo" style={{ width: "130px", height: "auto" }} />
       </div>
 
-      <Card style={{ backgroundColor: "white", color: "black", padding: "20px", borderRadius: "8px" }}>
+      {/* Caja blanca con contenido */}
+      <Card style={{ backgroundColor: "white", color: "black" }}>
         <CardContent>
-          <h1 style={{ fontSize: "24px", textAlign: "center", marginBottom: "20px" }}>Trabajos Completados</h1>
+          <Typography variant="h5" style={{ textAlign: "center", marginBottom: "20px" }}>
+            Trabajos Completados
+          </Typography>
 
-          <FormControl fullWidth style={{ marginBottom: "20px" }}>
-            <InputLabel id="filtro-label">Filtrar por estado de pago</InputLabel>
+          {/* Filtro */}
+          <div style={{ marginBottom: "20px", textAlign: "center" }}>
+            <Typography variant="body1" style={{ marginBottom: "8px" }}>Filtrar por estado de pago:</Typography>
             <Select
-              labelId="filtro-label"
-              value={filter}
-              label="Filtrar por estado de pago"
-              onChange={(e) => setFilter(e.target.value)}
+              value={filtro}
+              onChange={(e) => setFiltro(e.target.value)}
+              style={{ width: "200px" }}
             >
-              <MenuItem value="all">Todos</MenuItem>
-              <MenuItem value="pagado">Pagados</MenuItem>
-              <MenuItem value="pendiente">Pendientes</MenuItem>
+              <MenuItem value="Todos">Todos</MenuItem>
+              <MenuItem value="Pendiente">Pendiente</MenuItem>
+              <MenuItem value="Pagado">Pagado</MenuItem>
             </Select>
-          </FormControl>
+          </div>
 
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell><strong>Cliente</strong></TableCell>
-                  <TableCell><strong>Servicio</strong></TableCell>
-                  <TableCell><strong>Fecha</strong></TableCell>
-                  <TableCell><strong>Hora</strong></TableCell>
-                  <TableCell><strong>Estado de Pago</strong></TableCell>
-                  <TableCell><strong>Acción</strong></TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredJobs.map((job) => (
-                  <TableRow key={job.id} onClick={() => handleJobClick(job)}>
-                    <TableCell>{job.nombre}</TableCell>
-                    <TableCell>{job.servicio}</TableCell>
-                    <TableCell>{job.fecha}</TableCell>
-                    <TableCell>{job.hora}</TableCell>
-                    <TableCell>
-                      {job.estado_pago === "pagado" ? "Pagado" : "Pendiente"}
-                    </TableCell>
-                    <TableCell>
-                      {job.estado_pago === "pendiente" && (
-                        <Button
-                          variant="contained"
-                          onClick={(e) => {
-                            e.stopPropagation(); // Evita que se abra el dialog al hacer clic
-                            handlePaymentStatusChange(job.id, true);
-                          }}
-                          style={{ backgroundColor: "#4caf50", color: "white" }}
-                        >
-                          Marcar como Pagado
-                        </Button>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+          {/* Lista de trabajos */}
+          {trabajosFiltrados.length === 0 ? (
+            <Typography style={{ textAlign: "center" }}>No hay trabajos que coincidan con el filtro.</Typography>
+          ) : (
+            trabajosFiltrados.map((job) => (
+              <Card key={job.id} style={{ marginBottom: "20px", backgroundColor: "white", color: "black" }}>
+                <CardContent>
+                  <Typography variant="h6">{job.nombre}</Typography>
+                  <Typography>Teléfono: {job.telefono}</Typography>
+                  <Typography>Servicio: {job.servicio}</Typography>
+                  <Typography>Fecha: {job.fecha}</Typography>
+                  <Typography>Hora: {job.hora}</Typography>
+                  <Typography>Estado: {job.estado}</Typography>
+                  <Typography>
+                    <strong>Estado de pago:</strong>{" "}
+                    <span style={{ color: job.estado_pago === "Pagado" ? "green" : "red" }}>
+                      {job.estado_pago}
+                    </span>
+                  </Typography>
+
+                  {job.estado_pago === "Pendiente" && (
+                    <Button
+                      variant="contained"
+                      style={{ marginTop: "10px", backgroundColor: "green", color: "white" }}
+                      onClick={() => marcarComoPagado(job.id)}
+                    >
+                      Marcar como pagado
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            ))
+          )}
         </CardContent>
       </Card>
-
-      <Dialog open={Boolean(selectedJob)} onClose={handleCloseDialog}>
-        <DialogTitle>Detalles del Trabajo</DialogTitle>
-        <DialogContent>
-          {selectedJob && (
-            <>
-              <Typography><strong>Nombre:</strong> {selectedJob.nombre}</Typography>
-              <Typography><strong>Teléfono:</strong> {selectedJob.telefono}</Typography>
-              <Typography><strong>Servicio:</strong> {selectedJob.servicio}</Typography>
-              <Typography><strong>Fecha:</strong> {selectedJob.fecha}</Typography>
-              <Typography><strong>Hora:</strong> {selectedJob.hora}</Typography>
-              <Typography><strong>Estado de Pago:</strong> {selectedJob.estado_pago}</Typography>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
