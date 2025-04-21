@@ -12,6 +12,7 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
+    fontFamily: "'Poppins', sans-serif",
   },
   header: {
     display: "flex",
@@ -26,9 +27,16 @@ const styles = {
   title: {
     fontSize: "18px",
     fontWeight: "300",
-    fontFamily: "'Roboto', sans-serif",
+    fontFamily: "'Poppins', sans-serif",
     marginTop: "10px",
     letterSpacing: "1px",
+    textAlign: "center",
+  },
+  welcomeText: {
+    fontSize: "16px",
+    fontWeight: "400",
+    marginTop: "10px",
+    color: "#ccc",
     textAlign: "center",
   },
   button: {
@@ -36,24 +44,36 @@ const styles = {
     color: "black",
     margin: "10px 0",
     width: "200px",
+    borderRadius: "8px",
+    fontWeight: "500",
   },
 };
 
 export default function AdminPanel() {
   const router = useRouter();
-
-    // Función para redirigir a la página principal
-    const handleGoHome = () => {
-      router.push('/login');  // Redirige a la página principal
-    };
   const [citas, setCitas] = useState([]);
+  const [adminEmail, setAdminEmail] = useState("");
+
+  const handleGoHome = () => {
+    router.push("/login");
+  };
 
   useEffect(() => {
+    const fetchUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        setAdminEmail(user.email);
+      }
+    };
+
     const fetchCitas = async () => {
       const { data, error } = await supabase.from("citas").select("*");
       if (!error) setCitas(data);
     };
 
+    fetchUser();
     fetchCitas();
   }, []);
 
@@ -93,6 +113,11 @@ export default function AdminPanel() {
       <div style={styles.header}>
         <img src="/logo-cjmotor.png" alt="Logo CJ MOTOR" style={styles.logo} />
         <p style={styles.title}>Panel de Administración</p>
+        {adminEmail && (
+          <p style={styles.welcomeText}>
+             Hola {adminEmail === "admin@cjmotor.com" ? "Administrador" : adminEmail}
+          </p>
+        )}
       </div>
 
       <Button
@@ -123,19 +148,22 @@ export default function AdminPanel() {
       >
         Exportar citas CSV
       </Button>
-      <div style={{ display: "flex", justifyContent: "flex-start", marginTop: "20px" }}>
-            <Button
-              variant="contained"
-              style={{
-                backgroundColor: "white",
-                color: "black",
-              }}
-              onClick={handleGoHome}
-            >
-              Volver a login
-            </Button>
-          </div>
 
+      <div style={{ display: "flex", justifyContent: "flex-start", marginTop: "20px" }}>
+        <Button
+          variant="contained"
+          style={{
+            backgroundColor: "white",
+            color: "black",
+            borderRadius: "8px",
+            fontWeight: "500",
+          }}
+          onClick={handleGoHome}
+        >
+          Volver a login
+        </Button>
+      </div>
     </div>
   );
 }
+
