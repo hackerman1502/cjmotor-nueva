@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Button } from "@mui/material";
 import { useRouter } from "next/router";
 import Image from "next/image";
@@ -31,6 +32,13 @@ const styles = {
     letterSpacing: "1px",
     textAlign: "center",
   },
+  welcomeText: {
+    fontSize: "16px",
+    fontWeight: "400",
+    marginTop: "10px",
+    color: "#ccc",
+    textAlign: "center",
+  },
   button: {
     backgroundColor: "white",
     color: "black",
@@ -43,8 +51,8 @@ const styles = {
     position: "absolute",
     top: "20px",
     right: "20px",
-    backgroundColor: "white",    // Fondo blanco
-    color: "black",              // Letras negras
+    backgroundColor: "white",
+    color: "black",
     fontSize: "0.75rem",
     padding: "6px 12px",
     borderRadius: "6px",
@@ -55,11 +63,24 @@ const styles = {
 
 export default function UserPanel() {
   const router = useRouter();
+  const [userEmail, setUserEmail] = useState("");
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.push("/login");
   };
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        setUserEmail(user.email);
+      }
+    };
+    fetchUser();
+  }, []);
 
   return (
     <div style={styles.container}>
@@ -77,6 +98,11 @@ export default function UserPanel() {
           style={styles.logo}
         />
         <p style={styles.title}>Bienvenido al panel de usuario</p>
+        {userEmail && (
+          <p style={styles.welcomeText}>
+            👋 Hola {userEmail === "admin@cjmotor.com" ? "Administrador" : userEmail}
+          </p>
+        )}
       </div>
 
       <Button variant="contained" style={styles.button} onClick={() => router.push("/historial-reparaciones")}>
@@ -97,3 +123,4 @@ export default function UserPanel() {
     </div>
   );
 }
+
