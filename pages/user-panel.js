@@ -100,7 +100,7 @@ export default function UserPanel() {
         <p style={styles.title}>Bienvenido al panel de usuario</p>
         {userEmail && (
           <p style={styles.welcomeText}>
-            👋 Hola {userEmail === "admin@cjmotor.com" ? "Administrador" : userEmail}
+             Hola {userEmail === "admin@cjmotor.com" ? "Administrador" : userEmail}
           </p>
         )}
       </div>
