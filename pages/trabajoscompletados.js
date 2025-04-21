@@ -1,29 +1,32 @@
-import { Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+import { Button, Card, CardContent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Dialog, DialogTitle, DialogContent, Typography } from "@mui/material";
 import { supabase } from "../lib/supabaseClient";
 import { useRouter } from "next/router";
 import Image from "next/image";
 
 const styles = {
   container: {
-    padding: "20px",
     backgroundColor: "black",
     color: "white",
+    padding: "20px",
     minHeight: "100vh",
-    display: "flex",
-    flexDirection: "column",
-    fontFamily: "'Poppins', sans-serif",
   },
   header: {
     display: "flex",
-    justifyContent: "flex-end", // Para alinear el logo a la derecha
+    justifyContent: "space-between",
     alignItems: "center",
     marginBottom: "30px",
-    position: "relative",
   },
   logo: {
     width: "130px",
     height: "auto",
+  },
+  card: {
+    backgroundColor: "white",
+    color: "black",
+    padding: "20px",
+    borderRadius: "8px",
+    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
   },
   title: {
     fontSize: "24px",
@@ -68,14 +71,15 @@ const styles = {
 export default function TrabajosCompletados() {
   const [jobs, setJobs] = useState([]);
   const [filter, setFilter] = useState("all");
+  const [selectedJob, setSelectedJob] = useState(null);
   const router = useRouter();
 
+  // Función para obtener los trabajos completados desde Supabase
   useEffect(() => {
     const fetchJobs = async () => {
       const { data, error } = await supabase
         .from("citas_completadas")
-        .select("*")
-        .eq("estado", "completada");
+        .select("*");
 
       if (!error) {
         setJobs(data);
@@ -110,6 +114,14 @@ export default function TrabajosCompletados() {
     router.push("/login");
   };
 
+  const handleJobClick = (job) => {
+    setSelectedJob(job);
+  };
+
+  const handleCloseDialog = () => {
+    setSelectedJob(null);
+  };
+
   return (
     <div style={styles.container}>
       {/* Botón Log out en la esquina superior derecha */}
@@ -118,77 +130,92 @@ export default function TrabajosCompletados() {
       </Button>
 
       <div style={styles.header}>
-        <Image
-          src="/logo-cjmotor.png"
-          alt="Logo CJ MOTOR"
-          width={130}
-          height={130}
-          style={styles.logo}
-        />
+        <img src="/logo-cjmotor.png" alt="Logo CJ MOTOR" style={styles.logo} />
       </div>
 
-      <h1 style={styles.title}>Gestión de Trabajos Completados</h1>
+      <Card style={styles.card}>
+        <CardContent>
+          <h1 style={styles.title}>Trabajos Completados</h1>
 
-      <div>
-        <Button
-          variant="contained"
-          style={styles.filterButton}
-          onClick={() => setFilter("all")}
-        >
-          Ver Todos
-        </Button>
-        <Button
-          variant="contained"
-          style={styles.filterButton}
-          onClick={() => setFilter("pagado")}
-        >
-          Ver Pagados
-        </Button>
-        <Button
-          variant="contained"
-          style={styles.filterButton}
-          onClick={() => setFilter("pendiente")}
-        >
-          Ver Pendientes de Pago
-        </Button>
-      </div>
+          <div>
+            <Button
+              variant="contained"
+              style={styles.filterButton}
+              onClick={() => setFilter("all")}
+            >
+              Ver Todos
+            </Button>
+            <Button
+              variant="contained"
+              style={styles.filterButton}
+              onClick={() => setFilter("pagado")}
+            >
+              Ver Pagados
+            </Button>
+            <Button
+              variant="contained"
+              style={styles.filterButton}
+              onClick={() => setFilter("pendiente")}
+            >
+              Ver Pendientes de Pago
+            </Button>
+          </div>
 
-      <TableContainer style={styles.tableContainer}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Cliente</TableCell>
-              <TableCell>Servicio</TableCell>
-              <TableCell>Fecha</TableCell>
-              <TableCell>Hora</TableCell>
-              <TableCell>Estado de Pago</TableCell>
-              <TableCell>Acción</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {filteredJobs.map((job) => (
-              <TableRow key={job.id}>
-                <TableCell>{job.nombre}</TableCell>
-                <TableCell>{job.servicio}</TableCell>
-                <TableCell>{job.fecha}</TableCell>
-                <TableCell>{job.hora}</TableCell>
-                <TableCell>{job.estado_pago === "pagado" ? "Pagado" : "Pendiente"}</TableCell>
-                <TableCell>
-                  {job.estado_pago === "pendiente" && (
-                    <Button
-                      variant="contained"
-                      style={styles.button}
-                      onClick={() => handlePaymentStatusChange(job.id, true)}
-                    >
-                      Marcar como Pagado
-                    </Button>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+          <TableContainer style={styles.tableContainer}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Cliente</TableCell>
+                  <TableCell>Servicio</TableCell>
+                  <TableCell>Fecha</TableCell>
+                  <TableCell>Hora</TableCell>
+                  <TableCell>Estado de Pago</TableCell>
+                  <TableCell>Acción</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {filteredJobs.map((job) => (
+                  <TableRow key={job.id} onClick={() => handleJobClick(job)}>
+                    <TableCell>{job.nombre}</TableCell>
+                    <TableCell>{job.servicio}</TableCell>
+                    <TableCell>{job.fecha}</TableCell>
+                    <TableCell>{job.hora}</TableCell>
+                    <TableCell>{job.estado_pago === "pagado" ? "Pagado" : "Pendiente"}</TableCell>
+                    <TableCell>
+                      {job.estado_pago === "pendiente" && (
+                        <Button
+                          variant="contained"
+                          style={styles.button}
+                          onClick={() => handlePaymentStatusChange(job.id, true)}
+                        >
+                          Marcar como Pagado
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </CardContent>
+      </Card>
+
+      {/* Dialogo con detalles del trabajo completado */}
+      <Dialog open={Boolean(selectedJob)} onClose={handleCloseDialog}>
+        <DialogTitle>Detalles del Trabajo</DialogTitle>
+        <DialogContent>
+          {selectedJob && (
+            <>
+              <Typography><strong>Nombre:</strong> {selectedJob.nombre}</Typography>
+              <Typography><strong>Teléfono:</strong> {selectedJob.telefono}</Typography>
+              <Typography><strong>Servicio:</strong> {selectedJob.servicio}</Typography>
+              <Typography><strong>Fecha:</strong> {selectedJob.fecha}</Typography>
+              <Typography><strong>Hora:</strong> {selectedJob.hora}</Typography>
+              <Typography><strong>Estado de Pago:</strong> {selectedJob.estado_pago === "pagado" ? "Pagado" : "Pendiente"}</Typography>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
