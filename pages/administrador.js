@@ -47,12 +47,29 @@ const styles = {
     borderRadius: "8px",
     fontWeight: "500",
   },
+  logoutButton: {
+    position: "absolute",
+    top: "20px",
+    right: "20px",
+    backgroundColor: "white",
+    color: "black",
+    fontSize: "0.75rem",
+    padding: "6px 12px",
+    borderRadius: "6px",
+    textTransform: "none",
+    fontWeight: "500",
+  },
 };
 
 export default function AdminPanel() {
   const router = useRouter();
   const [citas, setCitas] = useState([]);
   const [adminEmail, setAdminEmail] = useState("");
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push("/login");
+  };
 
   const handleGoHome = () => {
     router.push("/login");
@@ -110,6 +127,15 @@ export default function AdminPanel() {
 
   return (
     <div style={styles.container}>
+      {/* 🔓 Botón Log out en la esquina superior derecha */}
+      <Button
+        variant="contained"
+        style={styles.logoutButton}
+        onClick={handleLogout}
+      >
+        Log out
+      </Button>
+
       <div style={styles.header}>
         <img src="/logo-cjmotor.png" alt="Logo CJ MOTOR" style={styles.logo} />
         <p style={styles.title}>Panel de Administración</p>
