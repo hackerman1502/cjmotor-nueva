@@ -19,11 +19,6 @@ export default function Login() {
     e.preventDefault();
     console.log("Se hizo submit");
 
-    if (email === 'admin' && password === 'admin') {
-      router.push('/administrador');
-      return;
-    }
-
     let data, error;
 
     if (isRegistering) {
@@ -46,8 +41,16 @@ export default function Login() {
       alert('Credenciales incorrectas o cuenta no confirmada');
       console.error(error);
     } else {
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      const userEmail = userData?.user?.email;
+
       console.log("Login correcto, redirigiendo");
-      router.push('/user-panel');
+
+      if (userEmail === 'admin@cjmotor.com') {
+        router.push('/administrador');
+      } else {
+        router.push('/user-panel');
+      }
     }
   };
 
@@ -181,4 +184,3 @@ const styles = {
     transition: 'all 0.3s ease',
   },
 };
-
