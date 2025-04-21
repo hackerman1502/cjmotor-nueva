@@ -1,72 +1,7 @@
 import { useState, useEffect } from "react";
-import { Button, Card, CardContent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Dialog, DialogTitle, DialogContent, Typography } from "@mui/material";
+import { Button, Card, CardContent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Dialog, DialogTitle, DialogContent, Typography, MenuItem, Select, FormControl, InputLabel } from "@mui/material";
 import { supabase } from "../lib/supabaseClient";
 import { useRouter } from "next/router";
-import Image from "next/image";
-
-const styles = {
-  container: {
-    backgroundColor: "black",
-    color: "white",
-    padding: "20px",
-    minHeight: "100vh",
-  },
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "30px",
-  },
-  logo: {
-    width: "130px",
-    height: "auto",
-  },
-  card: {
-    backgroundColor: "white",
-    color: "black",
-    padding: "20px",
-    borderRadius: "8px",
-    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-  },
-  title: {
-    fontSize: "24px",
-    marginBottom: "20px",
-    textAlign: "center",
-    fontWeight: "300",
-  },
-  tableContainer: {
-    maxWidth: "100%",
-    marginBottom: "20px",
-  },
-  button: {
-    backgroundColor: "white",
-    color: "black",
-    margin: "10px auto",
-    width: "200px",
-    borderRadius: "8px",
-    fontWeight: "500",
-  },
-  filterButton: {
-    backgroundColor: "#ff9900",
-    color: "black",
-    margin: "10px auto",
-    width: "200px",
-    borderRadius: "8px",
-    fontWeight: "500",
-  },
-  logoutButton: {
-    position: "absolute",
-    top: "20px",
-    right: "20px",
-    backgroundColor: "white",
-    color: "black",
-    fontSize: "0.75rem",
-    padding: "6px 12px",
-    borderRadius: "6px",
-    textTransform: "none",
-    fontWeight: "500",
-  },
-};
 
 export default function TrabajosCompletados() {
   const [jobs, setJobs] = useState([]);
@@ -74,7 +9,6 @@ export default function TrabajosCompletados() {
   const [selectedJob, setSelectedJob] = useState(null);
   const router = useRouter();
 
-  // Función para obtener los trabajos completados desde Supabase
   useEffect(() => {
     const fetchJobs = async () => {
       const { data, error } = await supabase
@@ -97,13 +31,12 @@ export default function TrabajosCompletados() {
       .update({ estado_pago: isPaid ? "pagado" : "pendiente" })
       .eq("id", jobId);
 
-    if (error) {
-      alert("Error al actualizar el estado del pago.");
-      console.error(error);
+    if (!error) {
+      setJobs(jobs.map((job) =>
+        job.id === jobId ? { ...job, estado_pago: isPaid ? "pagado" : "pendiente" } : job
+      ));
     } else {
-      alert(`La cita ha sido marcada como ${isPaid ? "pagada" : "pendiente de pago"}.`);
-      // Refrescar los datos
-      setJobs(jobs.map((job) => (job.id === jobId ? { ...job, estado_pago: isPaid ? "pagado" : "pendiente" } : job)));
+      alert("Error al actualizar el estado.");
     }
   };
 
@@ -123,54 +56,58 @@ export default function TrabajosCompletados() {
   };
 
   return (
-    <div style={styles.container}>
-      {/* Botón Log out en la esquina superior derecha */}
-      <Button variant="contained" style={styles.logoutButton} onClick={handleLogout}>
+    <div style={{ backgroundColor: "black", color: "white", padding: "20px", minHeight: "100vh" }}>
+      <Button
+        variant="contained"
+        onClick={handleLogout}
+        style={{
+          position: "absolute",
+          top: "20px",
+          right: "20px",
+          backgroundColor: "white",
+          color: "black",
+          fontSize: "0.75rem",
+          padding: "6px 12px",
+          borderRadius: "6px",
+          textTransform: "none",
+          fontWeight: "500",
+        }}
+      >
         Log out
       </Button>
 
-      <div style={styles.header}>
-        <img src="/logo-cjmotor.png" alt="Logo CJ MOTOR" style={styles.logo} />
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px" }}>
+        <img src="/logo-cjmotor.png" alt="Logo CJ MOTOR" style={{ width: "130px", height: "auto" }} />
       </div>
 
-      <Card style={styles.card}>
+      <Card style={{ backgroundColor: "white", color: "black", padding: "20px", borderRadius: "8px" }}>
         <CardContent>
-          <h1 style={styles.title}>Trabajos Completados</h1>
+          <h1 style={{ fontSize: "24px", textAlign: "center", marginBottom: "20px" }}>Trabajos Completados</h1>
 
-          <div>
-            <Button
-              variant="contained"
-              style={styles.filterButton}
-              onClick={() => setFilter("all")}
+          <FormControl fullWidth style={{ marginBottom: "20px" }}>
+            <InputLabel id="filtro-label">Filtrar por estado de pago</InputLabel>
+            <Select
+              labelId="filtro-label"
+              value={filter}
+              label="Filtrar por estado de pago"
+              onChange={(e) => setFilter(e.target.value)}
             >
-              Ver Todos
-            </Button>
-            <Button
-              variant="contained"
-              style={styles.filterButton}
-              onClick={() => setFilter("pagado")}
-            >
-              Ver Pagados
-            </Button>
-            <Button
-              variant="contained"
-              style={styles.filterButton}
-              onClick={() => setFilter("pendiente")}
-            >
-              Ver Pendientes de Pago
-            </Button>
-          </div>
+              <MenuItem value="all">Todos</MenuItem>
+              <MenuItem value="pagado">Pagados</MenuItem>
+              <MenuItem value="pendiente">Pendientes</MenuItem>
+            </Select>
+          </FormControl>
 
-          <TableContainer style={styles.tableContainer}>
+          <TableContainer>
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Cliente</TableCell>
-                  <TableCell>Servicio</TableCell>
-                  <TableCell>Fecha</TableCell>
-                  <TableCell>Hora</TableCell>
-                  <TableCell>Estado de Pago</TableCell>
-                  <TableCell>Acción</TableCell>
+                  <TableCell><strong>Cliente</strong></TableCell>
+                  <TableCell><strong>Servicio</strong></TableCell>
+                  <TableCell><strong>Fecha</strong></TableCell>
+                  <TableCell><strong>Hora</strong></TableCell>
+                  <TableCell><strong>Estado de Pago</strong></TableCell>
+                  <TableCell><strong>Acción</strong></TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -180,13 +117,18 @@ export default function TrabajosCompletados() {
                     <TableCell>{job.servicio}</TableCell>
                     <TableCell>{job.fecha}</TableCell>
                     <TableCell>{job.hora}</TableCell>
-                    <TableCell>{job.estado_pago === "pagado" ? "Pagado" : "Pendiente"}</TableCell>
+                    <TableCell>
+                      {job.estado_pago === "pagado" ? "Pagado" : "Pendiente"}
+                    </TableCell>
                     <TableCell>
                       {job.estado_pago === "pendiente" && (
                         <Button
                           variant="contained"
-                          style={styles.button}
-                          onClick={() => handlePaymentStatusChange(job.id, true)}
+                          onClick={(e) => {
+                            e.stopPropagation(); // Evita que se abra el dialog al hacer clic
+                            handlePaymentStatusChange(job.id, true);
+                          }}
+                          style={{ backgroundColor: "#4caf50", color: "white" }}
                         >
                           Marcar como Pagado
                         </Button>
@@ -200,7 +142,6 @@ export default function TrabajosCompletados() {
         </CardContent>
       </Card>
 
-      {/* Dialogo con detalles del trabajo completado */}
       <Dialog open={Boolean(selectedJob)} onClose={handleCloseDialog}>
         <DialogTitle>Detalles del Trabajo</DialogTitle>
         <DialogContent>
@@ -211,7 +152,7 @@ export default function TrabajosCompletados() {
               <Typography><strong>Servicio:</strong> {selectedJob.servicio}</Typography>
               <Typography><strong>Fecha:</strong> {selectedJob.fecha}</Typography>
               <Typography><strong>Hora:</strong> {selectedJob.hora}</Typography>
-              <Typography><strong>Estado de Pago:</strong> {selectedJob.estado_pago === "pagado" ? "Pagado" : "Pendiente"}</Typography>
+              <Typography><strong>Estado de Pago:</strong> {selectedJob.estado_pago}</Typography>
             </>
           )}
         </DialogContent>
@@ -219,3 +160,4 @@ export default function TrabajosCompletados() {
     </div>
   );
 }
+
