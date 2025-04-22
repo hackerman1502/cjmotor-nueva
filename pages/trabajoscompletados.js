@@ -1,9 +1,23 @@
 import { useEffect, useState } from "react";
-import { Card, CardContent, Typography, Button, MenuItem, Select } from "@mui/material";
+import {
+  Card,
+  CardContent,
+  Typography,
+  Button,
+  MenuItem,
+  Select,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  TableContainer,
+  Paper
+} from "@mui/material";
 import { useRouter } from "next/router";
 import { createClient } from "@supabase/supabase-js";
 
-// Config Supabase
+// Configuración de Supabase
 const supabaseUrl = "https://ynnclpisbiyaknnoijbd.supabase.co";
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlubmNscGlzYml5YWtubm9pamJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ4MjQyNDQsImV4cCI6MjA2MDQwMDI0NH0.hcPF3V32hWOT7XM0OpE0XX6cbuMDEXxvf8Ha79dT7YE";
 const supabase = createClient(supabaseUrl, supabaseKey);
@@ -57,10 +71,7 @@ export default function TrabajosCompletados() {
         <Button
           variant="contained"
           onClick={() => router.push("/administrador")}
-          style={{
-            backgroundColor: "white",
-            color: "black",
-          }}
+          style={{ backgroundColor: "white", color: "black" }}
         >
           Atrás
         </Button>
@@ -88,39 +99,57 @@ export default function TrabajosCompletados() {
             </Select>
           </div>
 
-          {/* Lista de trabajos */}
-          {trabajosFiltrados.length === 0 ? (
-            <Typography style={{ textAlign: "center" }}>No hay trabajos que coincidan con el filtro.</Typography>
-          ) : (
-            trabajosFiltrados.map((job) => (
-              <Card key={job.id} style={{ marginBottom: "20px", backgroundColor: "white", color: "black" }}>
-                <CardContent>
-                  <Typography variant="h6">{job.nombre}</Typography>
-                  <Typography>Teléfono: {job.telefono}</Typography>
-                  <Typography>Servicio: {job.servicio}</Typography>
-                  <Typography>Fecha: {job.fecha}</Typography>
-                  <Typography>Hora: {job.hora}</Typography>
-                  <Typography>Estado: {job.estado}</Typography>
-                  <Typography>
-                    <strong>Estado de pago:</strong>{" "}
-                    <span style={{ color: job.estado_pago === "Pagado" ? "green" : "red" }}>
-                      {job.estado_pago}
-                    </span>
-                  </Typography>
-
-                  {job.estado_pago === "Pendiente" && (
-                    <Button
-                      variant="contained"
-                      style={{ marginTop: "10px", backgroundColor: "green", color: "white" }}
-                      onClick={() => marcarComoPagado(job.id)}
-                    >
-                      Marcar como pagado
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-            ))
-          )}
+          {/* Tabla de trabajos */}
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Nombre</TableCell>
+                  <TableCell>Teléfono</TableCell>
+                  <TableCell>Servicio</TableCell>
+                  <TableCell>Fecha</TableCell>
+                  <TableCell>Hora</TableCell>
+                  <TableCell>Estado</TableCell>
+                  <TableCell>Pago</TableCell>
+                  <TableCell>Acción</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {trabajosFiltrados.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} align="center">
+                      No hay trabajos que coincidan con el filtro.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  trabajosFiltrados.map((trabajo) => (
+                    <TableRow key={trabajo.id}>
+                      <TableCell>{trabajo.nombre}</TableCell>
+                      <TableCell>{trabajo.telefono}</TableCell>
+                      <TableCell>{trabajo.servicio}</TableCell>
+                      <TableCell>{trabajo.fecha}</TableCell>
+                      <TableCell>{trabajo.hora}</TableCell>
+                      <TableCell>{trabajo.estado}</TableCell>
+                      <TableCell style={{ color: trabajo.estado_pago === "Pagado" ? "green" : "red" }}>
+                        {trabajo.estado_pago}
+                      </TableCell>
+                      <TableCell>
+                        {trabajo.estado_pago === "Pendiente" && (
+                          <Button
+                            variant="contained"
+                            style={{ backgroundColor: "green", color: "white" }}
+                            onClick={() => marcarComoPagado(trabajo.id)}
+                          >
+                            Marcar como pagado
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
         </CardContent>
       </Card>
     </div>
