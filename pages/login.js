@@ -3,7 +3,7 @@ import Head from 'next/head';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { supabase } from '../lib/supabaseClient';
-import Loader from '../pages/Loader';  // Aquí ajustamos la ruta para que apunte correctamente
+import Loader from '../pages/loader';  // Aquí ajustamos la ruta para que apunte correctamente
 
 export default function Login() {
   const [showForm, setShowForm] = useState(false);
