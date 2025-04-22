@@ -107,31 +107,29 @@ export default function UserPanel() {
 
   const handleOpenNotifications = async (event) => {
     setAnchorEl(event.currentTarget);
-
-    // Marcar las notificaciones como leídas cuando el usuario las vea
-    if (userId && notificaciones.length > 0) {
-      const unreadNotifications = notificaciones.filter((n) => !n.read);
-      if (unreadNotifications.length > 0) {
-        const unreadIds = unreadNotifications.map((n) => n.id);
-
-        // Marcar las notificaciones como leídas
-        await supabase
-          .from("notifications")
-          .update({ read: true })
-          .in("id", unreadIds);
-
-        // Actualizar las notificaciones locales
-        setNotificaciones((prevNotificaciones) =>
-          prevNotificaciones.map((n) =>
-            unreadIds.includes(n.id) ? { ...n, read: true } : n
-          )
-        );
-      }
-    }
   };
 
   const handleCloseNotifications = () => {
     setAnchorEl(null);
+  };
+
+  const handleMarkAsReadAndDelete = async (notificationId) => {
+    // Marcar la notificación como leída
+    await supabase
+      .from("notifications")
+      .update({ read: true })
+      .eq("id", notificationId);
+
+    // Eliminar la notificación de la base de datos
+    await supabase
+      .from("notifications")
+      .delete()
+      .eq("id", notificationId);
+
+    // Actualizar el estado de las notificaciones localmente
+    setNotificaciones((prevNotificaciones) =>
+      prevNotificaciones.filter((n) => n.id !== notificationId)
+    );
   };
 
   return (
@@ -152,7 +150,10 @@ export default function UserPanel() {
           <MenuItem disabled>No hay notificaciones</MenuItem>
         ) : (
           notificaciones.map((n) => (
-            <MenuItem key={n.id} onClick={handleCloseNotifications}>
+            <MenuItem
+              key={n.id}
+              onClick={() => handleMarkAsReadAndDelete(n.id)} // Cuando el usuario haga clic, se marca como leída y se elimina
+            >
               {n.message}
             </MenuItem>
           ))
