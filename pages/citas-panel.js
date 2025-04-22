@@ -65,9 +65,9 @@ export default function CitasPanel() {
       .eq("id", id)
       .single();
 
-    if (citaActualizada?.user_id) {
+    if (citaActualizada?.usuario_id) {
       await crearNotificacion(
-        citaActualizada.user_id,
+        citaActualizada.usuario_id,
         `Tu cita ha sido reprogramada para el ${fecha} a las ${hora}.`
       );
     }
