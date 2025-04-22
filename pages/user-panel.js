@@ -81,28 +81,30 @@ export default function UserPanel() {
   };
 
   useEffect(() => {
-    const fetchUserAndNotifications = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (user) {
-        setUserEmail(user.email);
-        setUserId(user.id);
+  const fetchUserAndNotifications = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) {
+      setUserEmail(user.email);
+      setUserId(user.id);
 
-        const { data, error } = await supabase
-          .from("notifications")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false });
+      // Obtener notificaciones
+      const { data, error } = await supabase
+        .from("notifications")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
 
-        if (!error) {
-          setNotificaciones(data);
-        }
+      if (!error) {
+        setNotificaciones(data);
       }
-    };
+    }
+  };
 
-    fetchUserAndNotifications();
-  }, []);
+  fetchUserAndNotifications();
+}, []);
+
 
   const handleOpenNotifications = async (event) => {
     setAnchorEl(event.currentTarget);
