@@ -1,48 +1,50 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent, Typography, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Select, MenuItem, InputLabel, FormControl, TextField } from "@mui/material";
+import {
+  Card, CardContent, Typography, Button,
+  Table, TableBody, TableCell, TableContainer,
+  TableHead, TableRow, Paper, Select, MenuItem,
+  InputLabel, FormControl, TextField
+} from "@mui/material";
 import { useRouter } from "next/router";
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
 // Configuración de Supabase
 const supabaseUrl = "https://ynnclpisbiyaknnoijbd.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlubmNscGlzYml5YWtubm9pamJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ4MjQyNDQsImV4cCI6MjA2MDQwMDI0NH0.hcPF3V32hWOT7XM0OpE0XX6cbuMDEXxvf8Ha79dT7YE";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlubmNscGlzYml5YWtubm9pamJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ4MjQyNDQsImV4cCI6MjA2MDQwMDI0NH0.hcPF3V32hWOT7XM0OpE0XX6cbuMDEXxvf8Ha79dT7YE
+";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function CitasPanel() {
   const [citas, setCitas] = useState([]);
   const [filter, setFilter] = useState("fecha");
   const [estadoFilter, setEstadoFilter] = useState("");
-  const [editCita, setEditCita] = useState(null); // Estado para manejar la cita en edición
+  const [editCita, setEditCita] = useState(null);
   const router = useRouter();
 
-  // Función para obtener las citas
   const fetchCitas = async () => {
     let query = supabase.from("citas").select("*");
 
-    if (estadoFilter) {
-      query = query.eq("estado", estadoFilter);
-    }
-
-    if (filter === "fecha") {
-      query = query.order("fecha", { ascending: true });
-    } else if (filter === "estado") {
-      query = query.order("estado", { ascending: true });
-    }
+    if (estadoFilter) query = query.eq("estado", estadoFilter);
+    if (filter === "fecha") query = query.order("fecha", { ascending: true });
+    else if (filter === "estado") query = query.order("estado", { ascending: true });
 
     const { data, error } = await query;
-
-    if (error) {
-      console.error("Error al obtener citas:", error);
-    } else {
-      setCitas(data);
-    }
+    if (error) console.error("Error al obtener citas:", error);
+    else setCitas(data);
   };
 
   useEffect(() => {
     fetchCitas();
   }, [filter, estadoFilter]);
 
-  // Función para actualizar la cita en la base de datos
+  // 🛎️ Función para crear notificaciones
+  const crearNotificacion = async (user_id, message) => {
+    const { error } = await supabase
+      .from("notifications")
+      .insert([{ user_id, message, read: false }]);
+    if (error) console.error("Error al crear la notificación:", error);
+  };
+
   const handleUpdateCita = async (id, fecha, hora) => {
     const { error } = await supabase
       .from("citas")
@@ -53,14 +55,32 @@ export default function CitasPanel() {
       console.error("Error al actualizar la cita:", error);
       alert("Hubo un problema al actualizar la cita.");
     } else {
-      fetchCitas(); // Refrescar las citas después de la actualización
-      setEditCita(null); // Volver a la vista de lista de citas
+      const { data: citaActualizada } = await supabase
+        .from("citas")
+        .select("user_id, nombre")
+        .eq("id", id)
+        .single();
+
+      if (citaActualizada?.user_id) {
+        await crearNotificacion(
+          citaActualizada.user_id,
+          `Tu cita ha sido reprogramada para el ${fecha} a las ${hora}.`
+        );
+      }
+
+      fetchCitas();
+      setEditCita(null);
       alert("Cita actualizada correctamente.");
     }
   };
 
-  // Función para eliminar una cita
   const handleDeleteCita = async (id) => {
+    const { data: citaEliminada } = await supabase
+      .from("citas")
+      .select("user_id, fecha, hora")
+      .eq("id", id)
+      .single();
+
     const { error } = await supabase
       .from("citas")
       .delete()
@@ -70,15 +90,19 @@ export default function CitasPanel() {
       console.error("Error al eliminar la cita:", error);
       alert("Hubo un problema al eliminar la cita.");
     } else {
-      fetchCitas(); // Refrescar las citas después de la eliminación
+      if (citaEliminada?.user_id) {
+        await crearNotificacion(
+          citaEliminada.user_id,
+          `Tu cita del ${citaEliminada.fecha} a las ${citaEliminada.hora} ha sido cancelada.`
+        );
+      }
+      fetchCitas();
       alert("Cita eliminada correctamente.");
     }
   };
 
-  // Función para marcar como completada (ya está implementada)
   const handleMarkCompleted = async (id) => {
     try {
-      // 1. Obtener la cita que se marcará como completada
       const { data: cita, error: fetchError } = await supabase
         .from("citas")
         .select("*")
@@ -91,27 +115,23 @@ export default function CitasPanel() {
         return;
       }
 
-      // 2. Insertar la cita en la tabla citas_completadas
       const { error: insertError } = await supabase
         .from("citas_completadas")
-        .insert([
-          {
-            nombre: cita.nombre,
-            telefono: cita.telefono,
-            servicio: cita.servicio,
-            fecha: cita.fecha,
-            hora: cita.hora,
-            estado: "Completada", // El estado se establece a "Completada"
-          },
-        ]);
+        .insert([{
+          nombre: cita.nombre,
+          telefono: cita.telefono,
+          servicio: cita.servicio,
+          fecha: cita.fecha,
+          hora: cita.hora,
+          estado: "Completada"
+        }]);
 
       if (insertError) {
-        console.error("Error al insertar en citas_completadas:", insertError);
+        console.error("Error al insertar:", insertError);
         alert("Hubo un problema al mover la cita.");
         return;
       }
 
-      // 3. Eliminar la cita de la tabla citas
       const { error: deleteError } = await supabase
         .from("citas")
         .delete()
@@ -123,8 +143,7 @@ export default function CitasPanel() {
         return;
       }
 
-      // 4. Actualizar la lista de citas
-      fetchCitas(); // Refrescar las citas
+      fetchCitas();
       alert("Cita marcada como completada y movida correctamente.");
     } catch (error) {
       console.error("Error inesperado:", error);
@@ -150,7 +169,6 @@ export default function CitasPanel() {
         <img src="/logo-cjmotor.png" alt="Logo" style={{ width: "130px", height: "auto" }} />
       </div>
 
-      {/* Tarjeta blanca */}
       <Card style={{ backgroundColor: "white", color: "black", padding: "20px" }}>
         <CardContent>
           <Typography variant="h5" style={{ textAlign: "center", marginBottom: "20px" }}>
@@ -204,26 +222,22 @@ export default function CitasPanel() {
                     <TableCell>{cita.telefono}</TableCell>
                     <TableCell>{cita.servicio}</TableCell>
                     <TableCell>
-                      {editCita && editCita.id === cita.id ? (
+                      {editCita?.id === cita.id ? (
                         <TextField
                           type="date"
                           value={editCita.fecha}
                           onChange={(e) => setEditCita({ ...editCita, fecha: e.target.value })}
                         />
-                      ) : (
-                        cita.fecha
-                      )}
+                      ) : cita.fecha}
                     </TableCell>
                     <TableCell>
-                      {editCita && editCita.id === cita.id ? (
+                      {editCita?.id === cita.id ? (
                         <TextField
                           type="time"
                           value={editCita.hora}
                           onChange={(e) => setEditCita({ ...editCita, hora: e.target.value })}
                         />
-                      ) : (
-                        cita.hora
-                      )}
+                      ) : cita.hora}
                     </TableCell>
                     <TableCell>{cita.estado}</TableCell>
                     <TableCell>
@@ -237,8 +251,7 @@ export default function CitasPanel() {
                             Marcar como Completada
                           </Button>
                         )}
-
-                        {editCita && editCita.id === cita.id ? (
+                        {editCita?.id === cita.id ? (
                           <Button
                             variant="contained"
                             style={{ backgroundColor: "black", color: "white" }}
@@ -250,16 +263,15 @@ export default function CitasPanel() {
                           <Button
                             variant="contained"
                             style={{ backgroundColor: "black", color: "white" }}
-                            onClick={() => setEditCita(cita)} // Activar el modo de edición
+                            onClick={() => setEditCita(cita)}
                           >
                             Editar
                           </Button>
                         )}
-
                         <Button
                           variant="contained"
                           style={{ backgroundColor: "red", color: "white" }}
-                          onClick={() => handleDeleteCita(cita.id)} // Eliminar cita
+                          onClick={() => handleDeleteCita(cita.id)}
                         >
                           Eliminar
                         </Button>
@@ -275,6 +287,5 @@ export default function CitasPanel() {
     </div>
   );
 }
-
 
 
