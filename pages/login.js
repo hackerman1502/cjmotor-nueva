@@ -4,22 +4,11 @@ import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { supabase } from '../lib/supabaseClient';
 
-// Componente de Loader
-const Loader = () => (
-  <div style={styles.loaderOverlay}>
-    <div style={styles.loader}>
-      <Image src="/loading.gif" alt="Cargando..." width={120} height={120} />
-      <p style={{ color: '#fff', marginTop: '10px' }}>Cargando...</p>
-    </div>
-  </div>
-);
-
 export default function Login() {
   const [showForm, setShowForm] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isRegistering, setIsRegistering] = useState(false);
-  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const handleAccessClick = () => {
@@ -28,7 +17,7 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    console.log("Se hizo submit");
 
     let data, error;
 
@@ -51,10 +40,11 @@ export default function Login() {
     if (error) {
       alert('Credenciales incorrectas o cuenta no confirmada');
       console.error(error);
-      setLoading(false);
     } else {
-      const { data: userData } = await supabase.auth.getUser();
+      const { data: userData, error: userError } = await supabase.auth.getUser();
       const userEmail = userData?.user?.email;
+
+      console.log("Login correcto, redirigiendo");
 
       if (userEmail === 'admin@cjmotor.com') {
         router.push('/administrador');
@@ -74,8 +64,6 @@ export default function Login() {
         />
       </Head>
 
-      {loading && <Loader />}
-
       <div style={styles.container}>
         <div style={styles.content}>
           <div style={styles.logoWrapper}>
@@ -89,9 +77,7 @@ export default function Login() {
           </div>
           <h1 style={styles.title}>Bienvenido a CJMOTOR</h1>
           <p style={styles.subtitle}>
-            {isRegistering
-              ? 'Regístrate para gestionar tus citas'
-              : 'Inicia sesión para gestionar tus citas'}
+            {isRegistering ? 'Regístrate para gestionar tus citas' : 'Inicia sesión para gestionar tus citas'}
           </p>
 
           {!showForm && (
@@ -121,16 +107,10 @@ export default function Login() {
               </button>
               <button
                 type="button"
-                style={{
-                  ...styles.button,
-                  backgroundColor: '#444',
-                  color: '#fff',
-                }}
+                style={{ ...styles.button, backgroundColor: '#444', color: '#fff' }}
                 onClick={() => setIsRegistering(!isRegistering)}
               >
-                {isRegistering
-                  ? '¿Ya tienes cuenta? Inicia sesión'
-                  : '¿No tienes cuenta? Regístrate'}
+                {isRegistering ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Regístrate'}
               </button>
             </form>
           )}
@@ -202,23 +182,6 @@ const styles = {
     fontSize: '1rem',
     outline: 'none',
     transition: 'all 0.3s ease',
-  },
-  loaderOverlay: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    width: '100vw',
-    height: '100vh',
-    backgroundColor: 'rgba(0, 0, 0, 0.9)',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 9999,
-  },
-  loader: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
   },
 };
 
