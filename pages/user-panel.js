@@ -81,43 +81,52 @@ export default function UserPanel() {
   };
 
   useEffect(() => {
-  const fetchUserAndNotifications = async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (user) {
-      setUserEmail(user.email);
-      setUserId(user.id);
+    const fetchUserAndNotifications = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        setUserEmail(user.email);
+        setUserId(user.id);
 
-      // Obtener notificaciones
-      const { data, error } = await supabase
-        .from("notifications")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
+        // Obtener notificaciones
+        const { data, error } = await supabase
+          .from("notifications")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false });
 
-      if (!error) {
-        setNotificaciones(data);
+        if (!error) {
+          setNotificaciones(data);
+        }
       }
-    }
-  };
+    };
 
-  fetchUserAndNotifications();
-}, []);
-
+    fetchUserAndNotifications();
+  }, []);
 
   const handleOpenNotifications = async (event) => {
     setAnchorEl(event.currentTarget);
 
+    // Marcar las notificaciones como leídas cuando el usuario las vea
     if (userId && notificaciones.length > 0) {
-      const ids = notificaciones.map((n) => n.id);
+      const unreadNotifications = notificaciones.filter((n) => !n.read);
+      if (unreadNotifications.length > 0) {
+        const unreadIds = unreadNotifications.map((n) => n.id);
 
-      await supabase
-        .from("notifications")
-        .delete()
-        .in("id", ids);
+        // Marcar las notificaciones como leídas
+        await supabase
+          .from("notifications")
+          .update({ read: true })
+          .in("id", unreadIds);
 
-      setNotificaciones([]);
+        // Actualizar las notificaciones locales
+        setNotificaciones((prevNotificaciones) =>
+          prevNotificaciones.map((n) =>
+            unreadIds.includes(n.id) ? { ...n, read: true } : n
+          )
+        );
+      }
     }
   };
 
