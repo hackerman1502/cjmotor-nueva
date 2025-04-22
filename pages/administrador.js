@@ -160,6 +160,13 @@ export default function AdminPanel() {
       >
         Gestionar citas
       </Button>
+          <Button
+          variant="contained"
+          style={styles.button}
+          onClick={() => router.push("/trabajoscompletados")}
+        >
+          Trabajos Completados
+        </Button>
       <Button
         variant="contained"
         style={styles.button}
