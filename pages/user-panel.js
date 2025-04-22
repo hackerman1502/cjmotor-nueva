@@ -71,11 +71,9 @@ const styles = {
 export default function UserPanel() {
   const router = useRouter();
   const [userEmail, setUserEmail] = useState("");
+  const [userId, setUserId] = useState("");
   const [anchorEl, setAnchorEl] = useState(null);
-  const [notificaciones, setNotificaciones] = useState([
-    { id: 1, mensaje: "Tu cita del 22/04 fue modificada" },
-    { id: 2, mensaje: "Tu cita del 25/04 fue cancelada" },
-  ]);
+  const [notificaciones, setNotificaciones] = useState([]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -83,19 +81,44 @@ export default function UserPanel() {
   };
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchUserAndNotifications = async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
       if (user) {
         setUserEmail(user.email);
+        setUserId(user.id);
+
+        const { data, error } = await supabase
+          .from("notificaciones")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false });
+
+        if (!error) {
+          setNotificaciones(data);
+        }
       }
     };
-    fetchUser();
+
+    fetchUserAndNotifications();
   }, []);
 
-  const handleOpenNotifications = (event) => {
+  const handleOpenNotifications = async (event) => {
     setAnchorEl(event.currentTarget);
+
+    // Borrar notificaciones de Supabase
+    if (userId && notificaciones.length > 0) {
+      const ids = notificaciones.map((n) => n.id);
+
+      await supabase
+        .from("notificaciones")
+        .delete()
+        .in("id", ids);
+
+      // Vaciar en el estado
+      setNotificaciones([]);
+    }
   };
 
   const handleCloseNotifications = () => {
@@ -168,5 +191,3 @@ export default function UserPanel() {
     </div>
   );
 }
-
-
