@@ -90,12 +90,11 @@ const handleMarkCompleted = async (id) => {
       return;
     }
 
-    // Obtener el usuario logueado
-    const { data: userData, error: userError } = await supabase.auth.getUser();
-
-    if (userError || !userData) {
-      console.error("Error al obtener el usuario:", userError);
-      alert("No se pudo obtener el usuario.");
+    // Obtener el `user.id` del contexto en lugar de supabase.auth.getUser()
+    const { user } = useUser();
+    if (!user) {
+      console.error("Usuario no autenticado");
+      alert("No estás logueado. Por favor, inicia sesión.");
       return;
     }
 
@@ -110,7 +109,7 @@ const handleMarkCompleted = async (id) => {
           fecha: cita.fecha,
           hora: cita.hora,
           estado: "Completada", // El estado se establece a "Completada"
-          usuario_id: userData.id, // Asignamos el ID del usuario que marcó la cita como completada
+          usuario_id: user.id, // Asignamos el ID del usuario logueado
         },
       ]);
 
@@ -140,6 +139,7 @@ const handleMarkCompleted = async (id) => {
     alert("Hubo un problema al procesar la cita.");
   }
 };
+
 
 
   return (
