@@ -32,26 +32,36 @@ export default function CitasPanel() {
   const router = useRouter();
 
   const fetchCitas = async () => {
-    let query = supabase.from("citas").select("*");
+  let query;
 
-    if (estadoFilter) {
-      query = query.eq("estado", estadoFilter);
-    }
+  // Si el filtro es "Completada", buscar en citas_completadas
+  if (estadoFilter === "Completada") {
+    query = supabase.from("citas_completadas").select("*");
+  } else {
+    query = supabase.from("citas").select("*");
+  }
 
-    if (filter === "fecha") {
-      query = query.order("fecha", { ascending: true });
-    } else if (filter === "estado") {
-      query = query.order("estado", { ascending: true });
-    }
+  // Si hay un filtro de estado "Pendiente", agregar el filtro
+  if (estadoFilter && estadoFilter !== "Completada") {
+    query = query.eq("estado", estadoFilter);
+  }
 
-    const { data, error } = await query;
+  // Ordenar por la columna de fecha o estado según se haya seleccionado
+  if (filter === "fecha") {
+    query = query.order("fecha", { ascending: true });
+  } else if (filter === "estado") {
+    query = query.order("estado", { ascending: true });
+  }
 
-    if (error) {
-      console.error("Error al obtener citas:", error);
-    } else {
-      setCitas(data);
-    }
-  };
+  const { data, error } = await query;
+
+  if (error) {
+    console.error("Error al obtener citas:", error);
+  } else {
+    setCitas(data);
+  }
+};
+
 
   useEffect(() => {
     fetchCitas();
