@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Button } from "@mui/material";
+import { Button, IconButton, Menu, MenuItem, Badge } from "@mui/material";
+import NotificationsIcon from "@mui/icons-material/Notifications";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import { supabase } from "../lib/supabaseClient";
@@ -59,11 +60,22 @@ const styles = {
     textTransform: "none",
     fontWeight: "500",
   },
+  notifications: {
+    position: "absolute",
+    top: "20px",
+    right: "90px",
+    color: "white",
+  },
 };
 
 export default function UserPanel() {
   const router = useRouter();
   const [userEmail, setUserEmail] = useState("");
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [notificaciones, setNotificaciones] = useState([
+    { id: 1, mensaje: "Tu cita del 22/04 fue modificada" },
+    { id: 2, mensaje: "Tu cita del 25/04 fue cancelada" },
+  ]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -82,9 +94,42 @@ export default function UserPanel() {
     fetchUser();
   }, []);
 
+  const handleOpenNotifications = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleCloseNotifications = () => {
+    setAnchorEl(null);
+  };
+
   return (
     <div style={styles.container}>
-      {/* 🔓 Botón Log out en la esquina superior derecha */}
+      {/* Campanita de notificaciones */}
+      <IconButton style={styles.notifications} onClick={handleOpenNotifications}>
+        <Badge badgeContent={notificaciones.length} color="error">
+          <NotificationsIcon style={{ color: "white" }} />
+        </Badge>
+      </IconButton>
+
+      {/* Menú de notificaciones */}
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleCloseNotifications}
+        PaperProps={{ style: { backgroundColor: "#222", color: "white" } }}
+      >
+        {notificaciones.length === 0 ? (
+          <MenuItem disabled>No hay notificaciones</MenuItem>
+        ) : (
+          notificaciones.map((n) => (
+            <MenuItem key={n.id} onClick={handleCloseNotifications}>
+              {n.mensaje}
+            </MenuItem>
+          ))
+        )}
+      </Menu>
+
+      {/* Botón logout */}
       <Button variant="contained" style={styles.logoutButton} onClick={handleLogout}>
         Log out
       </Button>
@@ -100,7 +145,7 @@ export default function UserPanel() {
         <p style={styles.title}>Bienvenido al panel de usuario</p>
         {userEmail && (
           <p style={styles.welcomeText}>
-             Hola {userEmail === "admin@cjmotor.com" ? "Administrador" : userEmail}
+            Hola {userEmail === "admin@cjmotor.com" ? "Administrador" : userEmail}
           </p>
         )}
       </div>
@@ -123,4 +168,5 @@ export default function UserPanel() {
     </div>
   );
 }
+
 
