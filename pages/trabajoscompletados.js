@@ -12,7 +12,8 @@ import {
   TableHead,
   TableRow,
   TableContainer,
-  Paper
+  Paper,
+  TextField,  // Importamos TextField para el filtro de búsqueda
 } from "@mui/material";
 import { useRouter } from "next/router";
 import { createClient } from "@supabase/supabase-js";
@@ -25,6 +26,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 export default function TrabajosCompletados() {
   const [trabajos, setTrabajos] = useState([]);
   const [filtro, setFiltro] = useState("Todos");
+  const [busqueda, setBusqueda] = useState("");  // Para la búsqueda por nombre/telefono
   const router = useRouter();
 
   const fetchTrabajos = async () => {
@@ -59,10 +61,22 @@ export default function TrabajosCompletados() {
     fetchTrabajos();
   }, []);
 
-  const trabajosFiltrados =
+  // Filtrar por estado de pago
+  const trabajosFiltradosPorEstado =
     filtro === "Todos"
       ? trabajos
       : trabajos.filter((t) => t.estado_pago === filtro);
+
+  // Filtrar por nombre o teléfono
+  const trabajosFiltrados =
+    busqueda === ""
+      ? trabajosFiltradosPorEstado
+      : trabajosFiltradosPorEstado.filter(
+          (trabajo) =>
+            `${trabajo.nombre ?? ""} ${trabajo.telefono ?? ""}`
+              .toLowerCase()
+              .includes(busqueda.toLowerCase())
+        );
 
   return (
     <div style={{ backgroundColor: "black", color: "white", minHeight: "100vh", padding: "20px" }}>
@@ -85,7 +99,7 @@ export default function TrabajosCompletados() {
             Trabajos Completados
           </Typography>
 
-          {/* Filtro */}
+          {/* Filtro por estado de pago */}
           <div style={{ marginBottom: "20px", textAlign: "center" }}>
             <Typography variant="body1" style={{ marginBottom: "8px" }}>Filtrar por estado de pago:</Typography>
             <Select
@@ -97,6 +111,17 @@ export default function TrabajosCompletados() {
               <MenuItem value="Pendiente">Pendiente</MenuItem>
               <MenuItem value="Pagado">Pagado</MenuItem>
             </Select>
+          </div>
+
+          {/* Filtro de búsqueda por nombre o teléfono */}
+          <div style={{ marginBottom: "20px", textAlign: "center" }}>
+            <TextField
+              label="Buscar por nombre o teléfono"
+              variant="outlined"
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              style={{ width: "100%", maxWidth: "400px" }}
+            />
           </div>
 
           {/* Tabla de trabajos */}
@@ -155,4 +180,3 @@ export default function TrabajosCompletados() {
     </div>
   );
 }
-
