@@ -1,21 +1,36 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent, Typography, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Select, MenuItem, InputLabel, FormControl, TextField } from "@mui/material";
+import {
+  Card,
+  CardContent,
+  Typography,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
+  TextField
+} from "@mui/material";
 import { useRouter } from "next/router";
 import { createClient } from '@supabase/supabase-js';
 
-// Configuración de Supabase
 const supabaseUrl = "https://ynnclpisbiyaknnoijbd.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlubmNscGlzYml5YWtubm9pamJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ4MjQyNDQsImV4cCI6MjA2MDQwMDI0NH0.hcPF3V32hWOT7XM0OpE0XX6cbuMDEXxvf8Ha79dT7YE";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function CitasPanel() {
   const [citas, setCitas] = useState([]);
   const [filter, setFilter] = useState("fecha");
   const [estadoFilter, setEstadoFilter] = useState("");
-  const [editCita, setEditCita] = useState(null); // Estado para manejar la cita en edición
+  const [editCita, setEditCita] = useState(null);
   const router = useRouter();
 
-  // Función para obtener las citas
   const fetchCitas = async () => {
     let query = supabase.from("citas").select("*");
 
@@ -42,8 +57,21 @@ export default function CitasPanel() {
     fetchCitas();
   }, [filter, estadoFilter]);
 
-  // Función para actualizar la cita en la base de datos
   const handleUpdateCita = async (id, fecha, hora) => {
+    const { data: citaData, error: fetchError } = await supabase
+      .from("citas")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (fetchError) {
+      console.error("Error al obtener la cita:", fetchError);
+      alert("Hubo un problema al obtener la cita.");
+      return;
+    }
+
+    const citaEmail = citaData.email;
+
     const { error } = await supabase
       .from("citas")
       .update({ fecha, hora })
@@ -53,14 +81,36 @@ export default function CitasPanel() {
       console.error("Error al actualizar la cita:", error);
       alert("Hubo un problema al actualizar la cita.");
     } else {
-      fetchCitas(); // Refrescar las citas después de la actualización
-      setEditCita(null); // Volver a la vista de lista de citas
-      alert("Cita actualizada correctamente.");
+      if (citaEmail) {
+        await supabase.from("notifications").insert([
+          {
+            user_email: citaEmail,
+            mensaje: `Tu cita ha sido modificada. Nueva fecha: ${fecha}, hora: ${hora}`,
+            leida: false,
+          },
+        ]);
+      }
+      fetchCitas();
+      setEditCita(null);
+      alert("Cita actualizada y notificación enviada.");
     }
   };
 
-  // Función para eliminar una cita
   const handleDeleteCita = async (id) => {
+    const { data: citaData, error: fetchError } = await supabase
+      .from("citas")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (fetchError) {
+      console.error("Error al obtener la cita:", fetchError);
+      alert("Hubo un problema al obtener la cita.");
+      return;
+    }
+
+    const citaEmail = citaData.email;
+
     const { error } = await supabase
       .from("citas")
       .delete()
@@ -70,15 +120,22 @@ export default function CitasPanel() {
       console.error("Error al eliminar la cita:", error);
       alert("Hubo un problema al eliminar la cita.");
     } else {
-      fetchCitas(); // Refrescar las citas después de la eliminación
-      alert("Cita eliminada correctamente.");
+      if (citaEmail) {
+        await supabase.from("notifications").insert([
+          {
+            user_email: citaEmail,
+            mensaje: `Tu cita ha sido cancelada por el administrador.`,
+            leida: false,
+          },
+        ]);
+      }
+      fetchCitas();
+      alert("Cita eliminada y notificación enviada.");
     }
   };
 
-  // Función para marcar como completada (ya está implementada)
   const handleMarkCompleted = async (id) => {
     try {
-      // 1. Obtener la cita que se marcará como completada
       const { data: cita, error: fetchError } = await supabase
         .from("citas")
         .select("*")
@@ -91,7 +148,6 @@ export default function CitasPanel() {
         return;
       }
 
-      // 2. Insertar la cita en la tabla citas_completadas
       const { error: insertError } = await supabase
         .from("citas_completadas")
         .insert([
@@ -101,7 +157,7 @@ export default function CitasPanel() {
             servicio: cita.servicio,
             fecha: cita.fecha,
             hora: cita.hora,
-            estado: "Completada", // El estado se establece a "Completada"
+            estado: "Completada",
           },
         ]);
 
@@ -111,7 +167,6 @@ export default function CitasPanel() {
         return;
       }
 
-      // 3. Eliminar la cita de la tabla citas
       const { error: deleteError } = await supabase
         .from("citas")
         .delete()
@@ -123,8 +178,7 @@ export default function CitasPanel() {
         return;
       }
 
-      // 4. Actualizar la lista de citas
-      fetchCitas(); // Refrescar las citas
+      fetchCitas();
       alert("Cita marcada como completada y movida correctamente.");
     } catch (error) {
       console.error("Error inesperado:", error);
@@ -150,7 +204,6 @@ export default function CitasPanel() {
         <img src="/logo-cjmotor.png" alt="Logo" style={{ width: "130px", height: "auto" }} />
       </div>
 
-      {/* Tarjeta blanca */}
       <Card style={{ backgroundColor: "white", color: "black", padding: "20px" }}>
         <CardContent>
           <Typography variant="h5" style={{ textAlign: "center", marginBottom: "20px" }}>
@@ -250,7 +303,7 @@ export default function CitasPanel() {
                           <Button
                             variant="contained"
                             style={{ backgroundColor: "black", color: "white" }}
-                            onClick={() => setEditCita(cita)} // Activar el modo de edición
+                            onClick={() => setEditCita(cita)}
                           >
                             Editar
                           </Button>
@@ -259,7 +312,7 @@ export default function CitasPanel() {
                         <Button
                           variant="contained"
                           style={{ backgroundColor: "red", color: "white" }}
-                          onClick={() => handleDeleteCita(cita.id)} // Eliminar cita
+                          onClick={() => handleDeleteCita(cita.id)}
                         >
                           Eliminar
                         </Button>
@@ -275,3 +328,4 @@ export default function CitasPanel() {
     </div>
   );
 }
+
