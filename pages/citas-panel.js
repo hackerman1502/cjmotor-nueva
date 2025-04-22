@@ -61,7 +61,7 @@ export default function CitasPanel() {
   } else {
     const { data: citaActualizada } = await supabase
       .from("citas")
-      .select("user_id, nombre")
+      .select("usuario_id, nombre")
       .eq("id", id)
       .single();
 
@@ -82,7 +82,7 @@ export default function CitasPanel() {
   const handleDeleteCita = async (id) => {
   const { data: citaEliminada } = await supabase
     .from("citas")
-    .select("user_id, fecha, hora")
+    .select("usuario_id, fecha, hora")
     .eq("id", id)
     .single();
 
@@ -95,9 +95,9 @@ export default function CitasPanel() {
     console.error("Error al eliminar la cita:", error);
     alert("Hubo un problema al eliminar la cita.");
   } else {
-    if (citaEliminada?.user_id) {
+    if (citaEliminada?.usuario_id) {
       await crearNotificacion(
-        citaEliminada.user_id,
+        citaEliminada.usuario_id,
         `Tu cita del ${citaEliminada.fecha} a las ${citaEliminada.hora} ha sido cancelada.`
       );
     }
