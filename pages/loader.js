@@ -1,5 +1,5 @@
 // components/Loader.js
-import Image from "next/image";
+import Image from 'next/image';
 
 export default function Loader() {
   return (
@@ -14,16 +14,16 @@ export default function Loader() {
 
 const styles = {
   overlay: {
-    position: "fixed",
+    position: "fixed",  // Fija la posición sobre todo el contenido
     top: 0,
     left: 0,
-    width: "100vw",
-    height: "100vh",
-    backgroundColor: "rgba(0, 0, 0, 0.85)",
+    width: "100vw",  // Asegura que ocupe todo el ancho
+    height: "100vh",  // Asegura que ocupe toda la altura
+    backgroundColor: "rgba(0, 0, 0, 0.85)",  // Fondo negro con opacidad
     display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 9999,
+    justifyContent: "center",  // Centra horizontalmente
+    alignItems: "center",  // Centra verticalmente
+    zIndex: 9999,  // Asegura que quede encima de otros contenidos
   },
   loader: {
     display: "flex",
@@ -37,3 +37,4 @@ const styles = {
     fontSize: "18px",
   },
 };
+
