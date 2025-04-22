@@ -37,68 +37,76 @@ export default function CitasPanel() {
   }, [filter, estadoFilter]);
 
   // 🛎️ Función para crear notificaciones
-  const crearNotificacion = async (user_id, message) => {
-    const { error } = await supabase
-      .from("notifications")
-      .insert([{ user_id, message, read: false }]);
-    if (error) console.error("Error al crear la notificación:", error);
-  };
+     const crearNotificacion = async (user_id, message) => {
+      const { error } = await supabase
+        .from("notifications")
+        .insert([{ user_id, message, read: false }]);
+      if (error) {
+        console.error("Error al crear la notificación:", error);
+      } else {
+        console.log("Notificación insertada correctamente:", { user_id, message });
+      }
+    };
+
 
   const handleUpdateCita = async (id, fecha, hora) => {
-    const { error } = await supabase
+  const { error } = await supabase
+    .from("citas")
+    .update({ fecha, hora })
+    .eq("id", id);
+
+  if (error) {
+    console.error("Error al actualizar la cita:", error);
+    alert("Hubo un problema al actualizar la cita.");
+  } else {
+    const { data: citaActualizada } = await supabase
       .from("citas")
-      .update({ fecha, hora })
-      .eq("id", id);
-
-    if (error) {
-      console.error("Error al actualizar la cita:", error);
-      alert("Hubo un problema al actualizar la cita.");
-    } else {
-      const { data: citaActualizada } = await supabase
-        .from("citas")
-        .select("user_id, nombre")
-        .eq("id", id)
-        .single();
-
-      if (citaActualizada?.user_id) {
-        await crearNotificacion(
-          citaActualizada.user_id,
-          `Tu cita ha sido reprogramada para el ${fecha} a las ${hora}.`
-        );
-      }
-
-      fetchCitas();
-      setEditCita(null);
-      alert("Cita actualizada correctamente.");
-    }
-  };
-
-  const handleDeleteCita = async (id) => {
-    const { data: citaEliminada } = await supabase
-      .from("citas")
-      .select("user_id, fecha, hora")
+      .select("user_id, nombre")
       .eq("id", id)
       .single();
 
-    const { error } = await supabase
-      .from("citas")
-      .delete()
-      .eq("id", id);
-
-    if (error) {
-      console.error("Error al eliminar la cita:", error);
-      alert("Hubo un problema al eliminar la cita.");
-    } else {
-      if (citaEliminada?.user_id) {
-        await crearNotificacion(
-          citaEliminada.user_id,
-          `Tu cita del ${citaEliminada.fecha} a las ${citaEliminada.hora} ha sido cancelada.`
-        );
-      }
-      fetchCitas();
-      alert("Cita eliminada correctamente.");
+    if (citaActualizada?.user_id) {
+      await crearNotificacion(
+        citaActualizada.user_id,
+        `Tu cita ha sido reprogramada para el ${fecha} a las ${hora}.`
+      );
     }
-  };
+
+    fetchCitas();
+    setEditCita(null);
+    alert("Cita actualizada correctamente.");
+  }
+};
+
+
+  const handleDeleteCita = async (id) => {
+  const { data: citaEliminada } = await supabase
+    .from("citas")
+    .select("user_id, fecha, hora")
+    .eq("id", id)
+    .single();
+
+  const { error } = await supabase
+    .from("citas")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    console.error("Error al eliminar la cita:", error);
+    alert("Hubo un problema al eliminar la cita.");
+  } else {
+    if (citaEliminada?.user_id) {
+      await crearNotificacion(
+        citaEliminada.user_id,
+        `Tu cita del ${citaEliminada.fecha} a las ${citaEliminada.hora} ha sido cancelada.`
+      );
+    }
+
+    fetchCitas();
+    alert("Cita eliminada correctamente.");
+  }
+};
+
 
   const handleMarkCompleted = async (id) => {
     try {
