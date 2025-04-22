@@ -90,7 +90,7 @@ export default function UserPanel() {
         setUserId(user.id);
 
         const { data, error } = await supabase
-          .from("notificaciones")
+          .from("notifications")
           .select("*")
           .eq("user_id", user.id)
           .order("created_at", { ascending: false });
@@ -107,16 +107,14 @@ export default function UserPanel() {
   const handleOpenNotifications = async (event) => {
     setAnchorEl(event.currentTarget);
 
-    // Borrar notificaciones de Supabase
     if (userId && notificaciones.length > 0) {
       const ids = notificaciones.map((n) => n.id);
 
       await supabase
-        .from("notificaciones")
+        .from("notifications")
         .delete()
         .in("id", ids);
 
-      // Vaciar en el estado
       setNotificaciones([]);
     }
   };
@@ -127,14 +125,12 @@ export default function UserPanel() {
 
   return (
     <div style={styles.container}>
-      {/* Campanita de notificaciones */}
       <IconButton style={styles.notifications} onClick={handleOpenNotifications}>
         <Badge badgeContent={notificaciones.length} color="error">
           <NotificationsIcon style={{ color: "white" }} />
         </Badge>
       </IconButton>
 
-      {/* Menú de notificaciones */}
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
@@ -146,13 +142,12 @@ export default function UserPanel() {
         ) : (
           notificaciones.map((n) => (
             <MenuItem key={n.id} onClick={handleCloseNotifications}>
-              {n.mensaje}
+              {n.message}
             </MenuItem>
           ))
         )}
       </Menu>
 
-      {/* Botón logout */}
       <Button variant="contained" style={styles.logoutButton} onClick={handleLogout}>
         Log out
       </Button>
