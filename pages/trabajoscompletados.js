@@ -99,29 +99,30 @@ export default function TrabajosCompletados() {
             Trabajos Completados
           </Typography>
 
-          {/* Filtro por estado de pago */}
-          <div style={{ marginBottom: "20px", textAlign: "center" }}>
-            <Typography variant="body1" style={{ marginBottom: "8px" }}>Filtrar por estado de pago:</Typography>
-            <Select
-              value={filtro}
-              onChange={(e) => setFiltro(e.target.value)}
-              style={{ width: "200px" }}
-            >
-              <MenuItem value="Todos">Todos</MenuItem>
-              <MenuItem value="Pendiente">Pendiente</MenuItem>
-              <MenuItem value="Pagado">Pagado</MenuItem>
-            </Select>
-          </div>
+          {/* Filtro por estado de pago y búsqueda en una fila */}
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "20px", textAlign: "center" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+              <Typography variant="body1">Filtrar por estado de pago:</Typography>
+              <Select
+                value={filtro}
+                onChange={(e) => setFiltro(e.target.value)}
+                style={{ width: "200px" }}
+              >
+                <MenuItem value="Todos">Todos</MenuItem>
+                <MenuItem value="Pendiente">Pendiente</MenuItem>
+                <MenuItem value="Pagado">Pagado</MenuItem>
+              </Select>
+            </div>
 
-          {/* Filtro de búsqueda por nombre o teléfono */}
-          <div style={{ marginBottom: "20px", textAlign: "center" }}>
-            <TextField
-              label="Buscar por nombre o teléfono"
-              variant="outlined"
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-              style={{ width: "100%", maxWidth: "400px" }}
-            />
+            <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+              <TextField
+                label="Buscar por nombre o teléfono"
+                variant="outlined"
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+                style={{ width: "250px" }}
+              />
+            </div>
           </div>
 
           {/* Tabla de trabajos */}
@@ -180,3 +181,4 @@ export default function TrabajosCompletados() {
     </div>
   );
 }
+
