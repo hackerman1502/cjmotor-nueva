@@ -1,14 +1,16 @@
 import Image from 'next/image';
 import Head from 'next/head';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { supabase } from '../lib/supabaseClient';
+import Loader from '../pages/Loader';  // Aquí ajustamos la ruta para que apunte correctamente
 
 export default function Login() {
   const [showForm, setShowForm] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isRegistering, setIsRegistering] = useState(false);
+  const [loading, setLoading] = useState(false); // Nuevo estado de carga
   const router = useRouter();
 
   const handleAccessClick = () => {
@@ -19,39 +21,45 @@ export default function Login() {
     e.preventDefault();
     console.log("Se hizo submit");
 
-    let data, error;
+    setLoading(true);  // Mostrar la pantalla de carga
+    setTimeout(async () => {
+      let data, error;
 
-    if (isRegistering) {
-      const result = await supabase.auth.signUp({
-        email,
-        password,
-      });
-      data = result.data;
-      error = result.error;
-    } else {
-      const result = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      data = result.data;
-      error = result.error;
-    }
-
-    if (error) {
-      alert('Credenciales incorrectas o cuenta no confirmada');
-      console.error(error);
-    } else {
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      const userEmail = userData?.user?.email;
-
-      console.log("Login correcto, redirigiendo");
-
-      if (userEmail === 'admin@cjmotor.com') {
-        router.push('/administrador');
+      if (isRegistering) {
+        const result = await supabase.auth.signUp({
+          email,
+          password,
+        });
+        data = result.data;
+        error = result.error;
       } else {
-        router.push('/user-panel');
+        const result = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        data = result.data;
+        error = result.error;
       }
-    }
+
+      if (error) {
+        alert('Credenciales incorrectas o cuenta no confirmada');
+        console.error(error);
+        setLoading(false); // Ocultar el loader si hay error
+      } else {
+        const { data: userData, error: userError } = await supabase.auth.getUser();
+        const userEmail = userData?.user?.email;
+
+        console.log("Login correcto, redirigiendo");
+
+        if (userEmail === 'admin@cjmotor.com') {
+          router.push('/administrador');
+        } else {
+          router.push('/user-panel');
+        }
+
+        setLoading(false); // Ocultar el loader después de la redirección
+      }
+    }, 1500); // Hacer que el loader esté visible durante 1.5 segundos, ajusta según necesites
   };
 
   return (
@@ -116,6 +124,8 @@ export default function Login() {
           )}
         </div>
       </div>
+
+      {loading && <Loader />} {/* Mostrar el Loader mientras se esté cargando */}
     </>
   );
 }
@@ -184,4 +194,5 @@ const styles = {
     transition: 'all 0.3s ease',
   },
 };
+
 
