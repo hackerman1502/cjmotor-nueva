@@ -62,6 +62,24 @@ export default function Login() {
     }, 1500); // Hacer que el loader esté visible durante 1.5 segundos, ajusta según necesites
   };
 
+  const handlePasswordReset = async () => {
+  if (!email) {
+    alert('Introduce tu correo electrónico para recuperar la contraseña.');
+    return;
+  }
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/reset-password`,
+  });
+
+  if (error) {
+    console.error(error);
+    alert('Hubo un problema al enviar el correo de recuperación.');
+  } else {
+    alert('Te hemos enviado un correo para restablecer tu contraseña.');
+  }
+};
+
   return (
     <>
       <Head>
@@ -120,6 +138,14 @@ export default function Login() {
               >
                 {isRegistering ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Regístrate'}
               </button>
+                              <button
+                type="button"
+                onClick={handlePasswordReset}
+                style={{ ...styles.button, backgroundColor: '#222', color: '#fff' }}
+              >
+                ¿Olvidaste tu contraseña?
+              </button>
+
             </form>
           )}
         </div>
