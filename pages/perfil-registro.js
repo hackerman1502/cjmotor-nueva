@@ -12,10 +12,10 @@ import { createClient } from "@supabase/supabase-js";
 
 // Configuración de Supabase
 const supabaseUrl = "https://ynnclpisbiyaknnoijbd.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlubmNscGlzYml5YWtubm9pamJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ4MjQyNDQsImV4cCI6MjA2MDQwMDI0NH0.hcPF3V32hWOT7XM0OpE0XX6cbuMDEXxvf8Ha79dT7YE";
+const supabaseKey = "TU_CLAVE_PUBLICA"; // ⚠️ Reemplaza por una clave pública segura
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-export default function Perfil() {
+export default function PerfilRegistro() {
   const [perfil, setPerfil] = useState({
     nombre: "",
     apellidos: "",
@@ -29,20 +29,14 @@ export default function Perfil() {
 
   useEffect(() => {
     const getPerfil = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      const { data, error } = await supabase
-        .from("perfiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
-
-      if (data) setPerfil(data);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.push("/login");
+        return;
+      }
+      setPerfil((prev) => ({ ...prev, correo: user.email }));
       setLoading(false);
     };
-
     getPerfil();
   }, []);
 
@@ -51,16 +45,17 @@ export default function Perfil() {
   };
 
   const guardarPerfil = async () => {
-    const {
-      data: { user },
-      error: userError
-    } = await supabase.auth.getUser();
-    
-    if (!user || userError) {
-      router.push("/login"); // o muestra un mensaje
+    const camposVacios = Object.values(perfil).some(valor => valor.trim() === "");
+    if (camposVacios) {
+      alert("Por favor, completa todos los campos.");
       return;
     }
 
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (!user || userError) {
+      router.push("/login");
+      return;
+    }
 
     const { error } = await supabase.from("perfiles").upsert({
       id: user.id,
@@ -70,56 +65,23 @@ export default function Perfil() {
     if (error) {
       alert("Error al guardar el perfil: " + error.message);
       console.error(error);
-    }
-    else {
-      alert("Perfil guardado correctamente");
+    } else {
+      router.push("/user-panel"); // Redirigir al panel tras guardar
     }
   };
 
   if (loading) return <p style={{ color: "white" }}>Cargando...</p>;
 
   return (
-    <div
-      style={{
-        backgroundColor: "black",
-        color: "white",
-        padding: "20px",
-        minHeight: "100vh",
-      }}
-    >
-      {/* Encabezado con botón atrás y logo */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "10px",
-        }}
-      >
-        <Button
-          variant="contained"
-          onClick={() => router.push("user-panel")}
-          style={{
-            backgroundColor: "white",
-            color: "black",
-            border: "1px solid #ccc",
-            marginRight: "10px",
-          }}
-        >
-          Atrás
-        </Button>
-        <img
-          src="/logo-cjmotor.png"
-          alt="Logo"
-          style={{ width: "130px", height: "auto" }}
-        />
+    <div style={{ backgroundColor: "black", color: "white", padding: "20px", minHeight: "100vh" }}>
+      <div style={{ textAlign: "center", marginBottom: "20px" }}>
+        <img src="/logo-cjmotor.png" alt="Logo" style={{ width: "130px" }} />
       </div>
 
-      {/* Caja blanca con formulario */}
       <Card style={{ backgroundColor: "white", color: "black", padding: "20px" }}>
         <CardContent>
           <Typography variant="h5" style={{ textAlign: "center", marginBottom: "20px" }}>
-            Mi Perfil
+            Completa tu perfil
           </Typography>
 
           {[
@@ -141,10 +103,11 @@ export default function Perfil() {
           ))}
 
           <Button variant="contained" onClick={guardarPerfil}>
-            Guardar
+            Guardar y continuar
           </Button>
         </CardContent>
       </Card>
     </div>
   );
 }
+
