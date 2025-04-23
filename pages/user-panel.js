@@ -67,15 +67,16 @@ const styles = {
     right: "90px",
     color: "white",
   },
-  whatsapp: {
-    position: "absolute",
-    top: "20px",
-    left: "20px",
-    color: "#25D366",
-    backgroundColor: "#1a1a1a",
-    borderRadius: "50%",
-    padding: "6px",
-  },
+    whatsapp: {
+      position: "absolute",
+      top: "20px",
+      left: "20px",
+      color: "white",
+      backgroundColor: "transparent", // Sin fondo
+      borderRadius: "50%",
+      padding: "6px",
+    },
+
 };
 
 export default function UserPanel() {
@@ -158,7 +159,7 @@ export default function UserPanel() {
         rel="noopener noreferrer"
       >
         <IconButton style={styles.whatsapp}>
-          <WhatsAppIcon />
+          <WhatsAppIcon style={{ color: "white" }} />
         </IconButton>
       </a>
 
