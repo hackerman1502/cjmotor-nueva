@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Button, IconButton, Menu, MenuItem, Badge } from "@mui/material";
+import { Button, IconButton, Menu, MenuItem, Badge, Card, CardContent, Grid, Typography } from "@mui/material";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import { useRouter } from "next/router";
 import Image from "next/image";
@@ -40,14 +40,6 @@ const styles = {
     color: "#ccc",
     textAlign: "center",
   },
-  button: {
-    backgroundColor: "white",
-    color: "black",
-    margin: "10px auto",
-    width: "200px",
-    borderRadius: "8px",
-    fontWeight: "500",
-  },
   logoutButton: {
     position: "absolute",
     top: "20px",
@@ -72,7 +64,7 @@ export default function UserPanel() {
   const router = useRouter();
   const [userEmail, setUserEmail] = useState("");
   const [userId, setUserId] = useState("");
-  const [userName, setUserName] = useState("");  // Para almacenar el nombre del usuario
+  const [userName, setUserName] = useState(""); // Para almacenar el nombre del usuario
   const [anchorEl, setAnchorEl] = useState(null);
   const [notificaciones, setNotificaciones] = useState([]);
 
@@ -95,10 +87,10 @@ export default function UserPanel() {
           .from("perfiles")
           .select("nombre")
           .eq("id", user.id)
-          .single();  // Solo esperamos un perfil
+          .single(); // Solo esperamos un perfil
 
         if (perfilData) {
-          setUserName(perfilData.nombre);  // Guardamos el nombre en el estado
+          setUserName(perfilData.nombre); // Guardamos el nombre en el estado
         }
 
         // Obtener notificaciones
@@ -146,6 +138,7 @@ export default function UserPanel() {
 
   return (
     <div style={styles.container}>
+      {/* Notificaciones */}
       <IconButton style={styles.notifications} onClick={handleOpenNotifications}>
         <Badge badgeContent={notificaciones.length} color="error">
           <NotificationsIcon style={{ color: "white" }} />
@@ -172,10 +165,12 @@ export default function UserPanel() {
         )}
       </Menu>
 
+      {/* Log out */}
       <Button variant="contained" style={styles.logoutButton} onClick={handleLogout}>
         Log out
       </Button>
 
+      {/* Cabecera */}
       <div style={styles.header}>
         <Image
           src="/logo-cjmotor.png"
@@ -192,22 +187,53 @@ export default function UserPanel() {
         )}
       </div>
 
-      <Button variant="contained" style={styles.button} onClick={() => router.push("/historial-reparaciones")}>
-        Historial reparaciones
-      </Button>
-
-      <Button variant="contained" style={styles.button} onClick={() => router.push("/perfil")}>
-        Perfil
-      </Button>
-
-      <Button variant="contained" style={styles.button} onClick={() => router.push("/")}>
-        Solicitar cita
-      </Button>
-
-      <Button variant="contained" style={styles.button} onClick={() => router.push("/mis-citas")}>
-        Mis Citas
-      </Button>
+      {/* Tarjeta con botones */}
+      <Card
+        sx={{
+          backgroundColor: "#1a1a1a",
+          borderRadius: "12px",
+          boxShadow: "0 0 15px rgba(255,255,255,0.1)",
+          padding: "20px",
+          maxWidth: 600,
+          width: "100%",
+          margin: "0 auto",
+          marginTop: "20px",
+        }}
+      >
+        <CardContent>
+          <Typography variant="h6" sx={{ color: "white", mb: 2, textAlign: "center" }}>
+            Acciones rápidas
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6}>
+              <Button
+                fullWidth
+                variant="contained"
+                onClick={() => router.push("/historial-reparaciones")}
+              >
+                Historial
+              </Button>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Button fullWidth variant="contained" onClick={() => router.push("/perfil")}>
+                Perfil
+              </Button>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Button fullWidth variant="contained" onClick={() => router.push("/")}>
+                Solicitar cita
+              </Button>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Button fullWidth variant="contained" onClick={() => router.push("/mis-citas")}>
+                Mis citas
+              </Button>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
     </div>
   );
 }
+
 
