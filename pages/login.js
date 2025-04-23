@@ -52,7 +52,7 @@ export default function Login() {
       console.log("Login correcto, redirigiendo");
 
       if (isRegistering) {
-        router.push("/perfil"); // 👉 aquí rediriges solo si es nuevo usuario
+        router.push("/perfil-registro"); // 👉 aquí rediriges solo si es nuevo usuario
       } else if (userEmail === 'admin@cjmotor.com') {
         router.push('/administrador');
       } else {
