@@ -215,6 +215,7 @@ export default function CitasPanel() {
                 <TableRow>
                   <TableCell><strong>Nombre</strong></TableCell>
                   <TableCell><strong>Teléfono</strong></TableCell>
+                  <TableCell><strong>Matrícula</strong></TableCell>
                   <TableCell><strong>Servicio</strong></TableCell>
                   <TableCell><strong>Fecha</strong></TableCell>
                   <TableCell><strong>Hora</strong></TableCell>
@@ -227,6 +228,7 @@ export default function CitasPanel() {
                   <TableRow key={cita.id}>
                     <TableCell>{cita.nombre}</TableCell>
                     <TableCell>{cita.telefono}</TableCell>
+                    <TableCell>{cita.matricula}</TableCell>
                     <TableCell>{cita.servicio}</TableCell>
                     <TableCell>
                       {editCita?.id === cita.id ? (
