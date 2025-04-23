@@ -72,6 +72,7 @@ export default function UserPanel() {
   const router = useRouter();
   const [userEmail, setUserEmail] = useState("");
   const [userId, setUserId] = useState("");
+  const [userName, setUserName] = useState("");  // Para almacenar el nombre del usuario
   const [anchorEl, setAnchorEl] = useState(null);
   const [notificaciones, setNotificaciones] = useState([]);
 
@@ -88,6 +89,17 @@ export default function UserPanel() {
       if (user) {
         setUserEmail(user.email);
         setUserId(user.id);
+
+        // Obtener el nombre del usuario desde la tabla 'perfiles'
+        const { data: perfilData, error: perfilError } = await supabase
+          .from("perfiles")
+          .select("nombre")
+          .eq("user_id", user.id)
+          .single();  // Solo esperamos un perfil
+
+        if (perfilData) {
+          setUserName(perfilData.nombre);  // Guardamos el nombre en el estado
+        }
 
         // Obtener notificaciones
         const { data, error } = await supabase
@@ -173,10 +185,10 @@ export default function UserPanel() {
           style={styles.logo}
         />
         <p style={styles.title}>Bienvenido al panel de usuario</p>
-        {userEmail && (
-          <p style={styles.welcomeText}>
-            Hola {userEmail === "admin@cjmotor.com" ? "Administrador" : userEmail}
-          </p>
+        {userName ? (
+          <p style={styles.welcomeText}>Hola, {userName}</p>
+        ) : (
+          <p style={styles.welcomeText}>Cargando...</p>
         )}
       </div>
 
@@ -198,3 +210,4 @@ export default function UserPanel() {
     </div>
   );
 }
+
