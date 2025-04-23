@@ -94,7 +94,7 @@ export default function UserPanel() {
         const { data: perfilData, error: perfilError } = await supabase
           .from("perfiles")
           .select("nombre")
-          .eq("user_id", user.id)
+          .eq("id", user.id)
           .single();  // Solo esperamos un perfil
 
         if (perfilData) {
