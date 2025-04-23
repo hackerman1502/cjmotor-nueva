@@ -162,7 +162,7 @@ const handleSubmit = async (e) => {
       // 🚨 Aquí creamos la notificación para el admin
       await supabase.from("notifications").insert([
         {
-          user_id: "admin", // Puedes usar 'admin' o un ID específico si tienes uno
+          user_id: "a1107c6e-aaee-4618-9531-d736017eec1c", // Puedes usar 'admin' o un ID específico si tienes uno
           message: `Nueva cita: ${form.fecha} a las ${form.hora} - ${form.servicio}`,
           read: false,
         },
