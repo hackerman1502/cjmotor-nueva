@@ -1,4 +1,5 @@
-import { Button } from "@mui/material";
+import { Button, IconButton, Menu, MenuItem, Badge } from "@mui/material";
+import NotificationsIcon from "@mui/icons-material/Notifications";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { supabase } from "../lib/supabaseClient";
@@ -13,6 +14,7 @@ const styles = {
     flexDirection: "column",
     alignItems: "center",
     fontFamily: "'Poppins', sans-serif",
+    position: "relative",
   },
   header: {
     display: "flex",
@@ -27,7 +29,6 @@ const styles = {
   title: {
     fontSize: "18px",
     fontWeight: "300",
-    fontFamily: "'Poppins', sans-serif",
     marginTop: "10px",
     letterSpacing: "1px",
     textAlign: "center",
@@ -60,27 +61,12 @@ const styles = {
     fontWeight: "500",
     zIndex: 2,
   },
-  notificationIcon: {
+  notifications: {
     position: "absolute",
     top: "20px",
     right: "90px",
-    backgroundColor: "white",
-    color: "black",
-    borderRadius: "6px",
-    padding: "6px 12px",
-    fontSize: "0.9rem",
-    cursor: "pointer",
-    zIndex: 2,
-  },
-  notificationBadge: {
-    position: "absolute",
-    top: "-5px",
-    right: "-5px",
-    backgroundColor: "red",
     color: "white",
-    borderRadius: "50%",
-    padding: "2px 6px",
-    fontSize: "12px",
+    zIndex: 3,
   },
 };
 
@@ -89,7 +75,7 @@ export default function AdminPanel() {
   const [citas, setCitas] = useState([]);
   const [adminEmail, setAdminEmail] = useState("");
   const [notificaciones, setNotificaciones] = useState([]);
-  const [mostrarNotis, setMostrarNotis] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -126,9 +112,23 @@ export default function AdminPanel() {
     fetchUser();
     fetchCitas();
     fetchNotificaciones();
-    const interval = setInterval(fetchNotificaciones, 10000); // cada 10 segundos
+    const interval = setInterval(fetchNotificaciones, 10000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleOpenNotifications = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleCloseNotifications = () => {
+    setAnchorEl(null);
+  };
+
+  const handleMarkAsReadAndDelete = async (notificationId) => {
+    await supabase.from("notifications").update({ read: true }).eq("id", notificationId);
+    await supabase.from("notifications").delete().eq("id", notificationId);
+    setNotificaciones((prev) => prev.filter((n) => n.id !== notificationId));
+  };
 
   const exportarCSV = () => {
     if (!citas.length) {
@@ -163,45 +163,33 @@ export default function AdminPanel() {
 
   return (
     <div style={styles.container}>
-      {/* 🔔 Campanita de notificaciones */}
-      <div style={styles.notificationIcon} onClick={() => setMostrarNotis(!mostrarNotis)}>
-        🔔
-        {notificaciones.length > 0 && (
-          <span style={styles.notificationBadge}>{notificaciones.length}</span>
-        )}
-      </div>
+      <IconButton style={styles.notifications} onClick={handleOpenNotifications}>
+        <Badge badgeContent={notificaciones.length} color="error">
+          <NotificationsIcon style={{ color: "white" }} />
+        </Badge>
+      </IconButton>
 
-      {/* 🔓 Botón Log out */}
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleCloseNotifications}
+        PaperProps={{ style: { backgroundColor: "#222", color: "white" } }}
+      >
+        {notificaciones.length === 0 ? (
+          <MenuItem disabled>No hay notificaciones nuevas</MenuItem>
+        ) : (
+          notificaciones.map((n) => (
+            <MenuItem key={n.id} onClick={() => handleMarkAsReadAndDelete(n.id)}>
+              {n.message}
+            </MenuItem>
+          ))
+        )}
+      </Menu>
+
       <Button variant="contained" style={styles.logoutButton} onClick={handleLogout}>
         Log out
       </Button>
 
-      {mostrarNotis && (
-        <div style={{
-          position: "absolute",
-          top: "60px",
-          right: "20px",
-          backgroundColor: "#222",
-          padding: "15px",
-          borderRadius: "8px",
-          color: "white",
-          width: "280px",
-          zIndex: 1,
-        }}>
-          <p style={{ fontWeight: "bold", marginBottom: "10px" }}>Notificaciones</p>
-          {notificaciones.length === 0 ? (
-            <p>No hay notificaciones nuevas.</p>
-          ) : (
-            notificaciones.map((noti) => (
-              <p key={noti.id} style={{ marginBottom: "8px", fontSize: "0.9rem" }}>
-                📩 {noti.message}
-              </p>
-            ))
-          )}
-        </div>
-      )}
-
-      {/* Header con logo y bienvenida */}
       <div style={styles.header}>
         <img src="/logo-cjmotor.png" alt="Logo CJ MOTOR" style={styles.logo} />
         <p style={styles.title}>Panel de Administración</p>
@@ -212,7 +200,6 @@ export default function AdminPanel() {
         )}
       </div>
 
-      {/* Botones del panel */}
       <Button variant="contained" style={styles.button} onClick={() => router.push("/admin-panel")}>
         Calendario citas
       </Button>
@@ -242,5 +229,6 @@ export default function AdminPanel() {
     </div>
   );
 }
+
 
 
