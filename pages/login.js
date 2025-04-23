@@ -154,7 +154,7 @@ export default function Login() {
         </div>
       </div>
 
-      {loading && <Loader />} {/* Mostrar el Loader mientras se esté cargando */}
+      //{loading && <Loader />} {/* Mostrar el Loader mientras se esté cargando */}
     </>
   );
 }
