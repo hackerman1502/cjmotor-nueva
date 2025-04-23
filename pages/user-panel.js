@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button, IconButton, Menu, MenuItem, Badge } from "@mui/material";
 import NotificationsIcon from "@mui/icons-material/Notifications";
+import WhatsAppIcon from "@mui/icons-material/WhatsApp"; // NUEVO
 import { useRouter } from "next/router";
 import Image from "next/image";
 import { supabase } from "../lib/supabaseClient";
@@ -66,13 +67,22 @@ const styles = {
     right: "90px",
     color: "white",
   },
+  whatsapp: {
+    position: "absolute",
+    top: "20px",
+    left: "20px",
+    color: "#25D366",
+    backgroundColor: "#1a1a1a",
+    borderRadius: "50%",
+    padding: "6px",
+  },
 };
 
 export default function UserPanel() {
   const router = useRouter();
   const [userEmail, setUserEmail] = useState("");
   const [userId, setUserId] = useState("");
-  const [userName, setUserName] = useState("");  // Para almacenar el nombre del usuario
+  const [userName, setUserName] = useState("");
   const [anchorEl, setAnchorEl] = useState(null);
   const [notificaciones, setNotificaciones] = useState([]);
 
@@ -90,18 +100,16 @@ export default function UserPanel() {
         setUserEmail(user.email);
         setUserId(user.id);
 
-        // Obtener el nombre del usuario desde la tabla 'perfiles'
-        const { data: perfilData, error: perfilError } = await supabase
+        const { data: perfilData } = await supabase
           .from("perfiles")
           .select("nombre")
           .eq("id", user.id)
-          .single();  // Solo esperamos un perfil
+          .single();
 
         if (perfilData) {
-          setUserName(perfilData.nombre);  // Guardamos el nombre en el estado
+          setUserName(perfilData.nombre);
         }
 
-        // Obtener notificaciones
         const { data, error } = await supabase
           .from("notifications")
           .select("*")
@@ -117,7 +125,7 @@ export default function UserPanel() {
     fetchUserAndNotifications();
   }, []);
 
-  const handleOpenNotifications = async (event) => {
+  const handleOpenNotifications = (event) => {
     setAnchorEl(event.currentTarget);
   };
 
@@ -126,26 +134,34 @@ export default function UserPanel() {
   };
 
   const handleMarkAsReadAndDelete = async (notificationId) => {
-    // Marcar la notificación como leída
     await supabase
       .from("notifications")
       .update({ read: true })
       .eq("id", notificationId);
 
-    // Eliminar la notificación de la base de datos
     await supabase
       .from("notifications")
       .delete()
       .eq("id", notificationId);
 
-    // Actualizar el estado de las notificaciones localmente
-    setNotificaciones((prevNotificaciones) =>
-      prevNotificaciones.filter((n) => n.id !== notificationId)
+    setNotificaciones((prev) =>
+      prev.filter((n) => n.id !== notificationId)
     );
   };
 
   return (
     <div style={styles.container}>
+      {/* WhatsApp Icon */}
+      <a
+        href="https://wa.me/34666357796"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <IconButton style={styles.whatsapp}>
+          <WhatsAppIcon />
+        </IconButton>
+      </a>
+
       <IconButton style={styles.notifications} onClick={handleOpenNotifications}>
         <Badge badgeContent={notificaciones.length} color="error">
           <NotificationsIcon style={{ color: "white" }} />
@@ -162,10 +178,7 @@ export default function UserPanel() {
           <MenuItem disabled>No hay notificaciones</MenuItem>
         ) : (
           notificaciones.map((n) => (
-            <MenuItem
-              key={n.id}
-              onClick={() => handleMarkAsReadAndDelete(n.id)} // Cuando el usuario haga clic, se marca como leída y se elimina
-            >
+            <MenuItem key={n.id} onClick={() => handleMarkAsReadAndDelete(n.id)}>
               {n.message}
             </MenuItem>
           ))
@@ -185,11 +198,9 @@ export default function UserPanel() {
           style={styles.logo}
         />
         <p style={styles.title}>Bienvenido al panel de usuario</p>
-        {userName ? (
-          <p style={styles.welcomeText}>Hola, {userName}</p>
-        ) : (
-          <p style={styles.welcomeText}>Cargando...</p>
-        )}
+        <p style={styles.welcomeText}>
+          {userName ? `Hola, ${userName}` : "Cargando..."}
+        </p>
       </div>
 
       <Button variant="contained" style={styles.button} onClick={() => router.push("/historial-reparaciones")}>
@@ -210,3 +221,4 @@ export default function UserPanel() {
     </div>
   );
 }
+
