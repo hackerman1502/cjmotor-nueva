@@ -117,22 +117,19 @@ const handleSubmit = async (e) => {
   if (!form.nombre || !form.telefono || !form.fecha || !form.servicio || !form.hora) return;
 
   try {
-    // Obtener el usuario logueado
     const { data: { user } } = await supabase.auth.getUser();
 
-    // Verifica si hay un usuario logueado
     if (!user) {
       alert("Debes iniciar sesión para reservar una cita.");
       return;
     }
 
-    // Verificar si ya existe una cita para esa fecha y hora
     const { data: citasExistentes, error: errorCitasExistentes } = await supabase
       .from('citas')
       .select("*")
       .eq("fecha", form.fecha)
       .eq("hora", form.hora)
-      .eq("usuario_id", user.id); // Verifica si ya tiene una cita en esa fecha y hora
+      .eq("usuario_id", user.id);
 
     if (errorCitasExistentes) {
       alert("Error al verificar las citas existentes");
@@ -145,7 +142,6 @@ const handleSubmit = async (e) => {
       return;
     }
 
-    // Si no existe una cita, procede a insertar la nueva cita
     const { data, error } = await supabase
       .from('citas')
       .insert([{
@@ -155,7 +151,7 @@ const handleSubmit = async (e) => {
         hora: form.hora,
         servicio: form.servicio,
         comentario: form.comentario,
-        usuario_id: user.id, // Aquí añadimos el usuario_id
+        usuario_id: user.id,
         matricula: form.matricula,
       }]);
 
@@ -163,6 +159,15 @@ const handleSubmit = async (e) => {
       alert("Error al guardar la cita");
       console.error("Error de Supabase:", error);
     } else {
+      // 🚨 Aquí creamos la notificación para el admin
+      await supabase.from("notifications").insert([
+        {
+          user_id: "admin", // Puedes usar 'admin' o un ID específico si tienes uno
+          message: `Nueva cita: ${form.fecha} a las ${form.hora} - ${form.servicio}`,
+          read: false,
+        },
+      ]);
+
       setMensajeExito("Cita guardada correctamente");
       setForm({
         nombre: "",
@@ -171,14 +176,16 @@ const handleSubmit = async (e) => {
         servicio: "",
         comentario: "",
         hora: "",
+        matricula: "",
       });
-      fetchCitas(); // Actualiza las citas
+      fetchCitas();
     }
   } catch (error) {
     alert("Hubo un error al enviar la cita");
     console.error(error);
   }
 };
+
   const isFormValid = () => {
     return form.nombre && form.telefono && form.fecha && form.hora && form.servicio;
   };
