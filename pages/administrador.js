@@ -58,6 +58,29 @@ const styles = {
     borderRadius: "6px",
     textTransform: "none",
     fontWeight: "500",
+    zIndex: 2,
+  },
+  notificationIcon: {
+    position: "absolute",
+    top: "20px",
+    right: "90px",
+    backgroundColor: "white",
+    color: "black",
+    borderRadius: "6px",
+    padding: "6px 12px",
+    fontSize: "0.9rem",
+    cursor: "pointer",
+    zIndex: 2,
+  },
+  notificationBadge: {
+    position: "absolute",
+    top: "-5px",
+    right: "-5px",
+    backgroundColor: "red",
+    color: "white",
+    borderRadius: "50%",
+    padding: "2px 6px",
+    fontSize: "12px",
   },
 };
 
@@ -65,6 +88,8 @@ export default function AdminPanel() {
   const router = useRouter();
   const [citas, setCitas] = useState([]);
   const [adminEmail, setAdminEmail] = useState("");
+  const [notificaciones, setNotificaciones] = useState([]);
+  const [mostrarNotis, setMostrarNotis] = useState(false);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -75,23 +100,34 @@ export default function AdminPanel() {
     router.push("/login");
   };
 
+  const fetchUser = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) setAdminEmail(user.email);
+  };
+
+  const fetchCitas = async () => {
+    const { data, error } = await supabase.from("citas").select("*");
+    if (!error) setCitas(data);
+  };
+
+  const fetchNotificaciones = async () => {
+    const { data, error } = await supabase
+      .from("notifications")
+      .select("*")
+      .eq("read", false)
+      .order("created_at", { ascending: false });
+
+    if (!error) setNotificaciones(data);
+  };
+
   useEffect(() => {
-    const fetchUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (user) {
-        setAdminEmail(user.email);
-      }
-    };
-
-    const fetchCitas = async () => {
-      const { data, error } = await supabase.from("citas").select("*");
-      if (!error) setCitas(data);
-    };
-
     fetchUser();
     fetchCitas();
+    fetchNotificaciones();
+    const interval = setInterval(fetchNotificaciones, 10000); // cada 10 segundos
+    return () => clearInterval(interval);
   }, []);
 
   const exportarCSV = () => {
@@ -127,76 +163,84 @@ export default function AdminPanel() {
 
   return (
     <div style={styles.container}>
-      {/* 🔓 Botón Log out en la esquina superior derecha */}
-      <Button
-        variant="contained"
-        style={styles.logoutButton}
-        onClick={handleLogout}
-      >
+      {/* 🔔 Campanita de notificaciones */}
+      <div style={styles.notificationIcon} onClick={() => setMostrarNotis(!mostrarNotis)}>
+        🔔
+        {notificaciones.length > 0 && (
+          <span style={styles.notificationBadge}>{notificaciones.length}</span>
+        )}
+      </div>
+
+      {/* 🔓 Botón Log out */}
+      <Button variant="contained" style={styles.logoutButton} onClick={handleLogout}>
         Log out
       </Button>
 
+      {mostrarNotis && (
+        <div style={{
+          position: "absolute",
+          top: "60px",
+          right: "20px",
+          backgroundColor: "#222",
+          padding: "15px",
+          borderRadius: "8px",
+          color: "white",
+          width: "280px",
+          zIndex: 1,
+        }}>
+          <p style={{ fontWeight: "bold", marginBottom: "10px" }}>Notificaciones</p>
+          {notificaciones.length === 0 ? (
+            <p>No hay notificaciones nuevas.</p>
+          ) : (
+            notificaciones.map((noti) => (
+              <p key={noti.id} style={{ marginBottom: "8px", fontSize: "0.9rem" }}>
+                📩 {noti.message}
+              </p>
+            ))
+          )}
+        </div>
+      )}
+
+      {/* Header con logo y bienvenida */}
       <div style={styles.header}>
         <img src="/logo-cjmotor.png" alt="Logo CJ MOTOR" style={styles.logo} />
         <p style={styles.title}>Panel de Administración</p>
         {adminEmail && (
           <p style={styles.welcomeText}>
-             Hola {adminEmail === "admin@cjmotor.com" ? "Administrador" : adminEmail}
+            Hola {adminEmail === "admin@cjmotor.com" ? "Administrador" : adminEmail}
           </p>
         )}
       </div>
 
-      <Button
-        variant="contained"
-        style={styles.button}
-        onClick={() => router.push("/admin-panel")}
-      >
+      {/* Botones del panel */}
+      <Button variant="contained" style={styles.button} onClick={() => router.push("/admin-panel")}>
         Calendario citas
       </Button>
-      <Button
-        variant="contained"
-        style={styles.button}
-        onClick={() => router.push("/citas-panel")}
-      >
+      <Button variant="contained" style={styles.button} onClick={() => router.push("/citas-panel")}>
         Gestionar citas
       </Button>
-          <Button
-          variant="contained"
-          style={styles.button}
-          onClick={() => router.push("/trabajoscompletados")}
-        >
-          Trabajos Completados
-        </Button>
-      <Button
-        variant="contained"
-        style={styles.button}
-        onClick={() => router.push("registro-cita-admin")}
-      >
+      <Button variant="contained" style={styles.button} onClick={() => router.push("/trabajoscompletados")}>
+        Trabajos Completados
+      </Button>
+      <Button variant="contained" style={styles.button} onClick={() => router.push("registro-cita-admin")}>
         Registro cita
       </Button>
-      <Button
-        variant="contained"
-        style={styles.button}
-        onClick={exportarCSV}
-      >
+      <Button variant="contained" style={styles.button} onClick={exportarCSV}>
         Exportar citas CSV
       </Button>
 
       <div style={{ display: "flex", justifyContent: "flex-start", marginTop: "20px" }}>
-        <Button
-          variant="contained"
-          style={{
-            backgroundColor: "white",
-            color: "black",
-            borderRadius: "8px",
-            fontWeight: "500",
-          }}
-          onClick={handleGoHome}
-        >
+        <Button variant="contained" style={{
+          backgroundColor: "white",
+          color: "black",
+          borderRadius: "8px",
+          fontWeight: "500",
+        }} onClick={handleGoHome}>
           Volver a login
         </Button>
       </div>
     </div>
   );
 }
+
 
