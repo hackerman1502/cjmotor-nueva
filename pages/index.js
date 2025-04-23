@@ -30,6 +30,7 @@ export default function Home() {
     hora: "",
     servicio: "",
     comentario: "",
+    matricula: "",
   });
 
   const [citas, setCitas] = useState([]);
@@ -155,6 +156,7 @@ const handleSubmit = async (e) => {
         servicio: form.servicio,
         comentario: form.comentario,
         usuario_id: user.id, // Aquí añadimos el usuario_id
+        matricula: form.matricula,
       }]);
 
     if (error) {
@@ -218,6 +220,15 @@ const handleSubmit = async (e) => {
                 }}
               />
             </div>
+                  <div>
+                <InputLabel>Matrícula</InputLabel>
+                <Input
+                  value={form.matricula}
+                  onChange={(e) => handleChange("matricula", e.target.value)}
+                  fullWidth
+                  placeholder="1234-ABC"
+                />
+              </div>
             <div>
               <InputLabel>Día</InputLabel>
               <Input type="date" value={form.fecha} onChange={handleSelectDia} fullWidth />
