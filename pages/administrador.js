@@ -172,7 +172,7 @@ export default function AdminPanel() {
     backgroundImage: "url('/fondo-taller.jpg')", // Asegúrate que esta imagen está en /public
     backgroundSize: "cover",
     backgroundPosition: "center",
-    opacity: 0.10,
+    opacity: 0.15,
     zIndex: 0,
   };
 
