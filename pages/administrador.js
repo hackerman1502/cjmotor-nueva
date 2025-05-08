@@ -15,6 +15,7 @@ const styles = {
     alignItems: "center",
     fontFamily: "'Poppins', sans-serif",
     position: "relative",
+    zIndex: 1, // Nos aseguramos de que el contenido esté encima del fondo
   },
   header: {
     display: "flex",
@@ -161,8 +162,24 @@ export default function AdminPanel() {
     link.click();
   };
 
+  // 🔥 Fondo con opacidad
+  const backgroundStyle = {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    backgroundImage: "url('/fondo-taller.jpg')", // Asegúrate que esta imagen está en /public
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    opacity: 0.15,
+    zIndex: 0,
+  };
+
   return (
     <div style={styles.container}>
+      <div style={backgroundStyle}></div>
+
       <IconButton style={styles.notifications} onClick={handleOpenNotifications}>
         <Badge badgeContent={notificaciones.length} color="error">
           <NotificationsIcon style={{ color: "white" }} />
@@ -217,12 +234,16 @@ export default function AdminPanel() {
       </Button>
 
       <div style={{ display: "flex", justifyContent: "flex-start", marginTop: "20px" }}>
-        <Button variant="contained" style={{
-          backgroundColor: "white",
-          color: "black",
-          borderRadius: "8px",
-          fontWeight: "500",
-        }} onClick={handleGoHome}>
+        <Button
+          variant="contained"
+          style={{
+            backgroundColor: "white",
+            color: "black",
+            borderRadius: "8px",
+            fontWeight: "500",
+          }}
+          onClick={handleGoHome}
+        >
           Volver a login
         </Button>
       </div>
