@@ -228,6 +228,16 @@ const handleSubmit = async (e) => {
                 }}
               />
             </div>
+                   {/* Campo matrícula editable */}
+              <div>
+                <InputLabel>Matrícula</InputLabel>
+                <Input
+                  value={form.matricula} // Cargamos el valor automáticamente desde el estado 'form.matricula'
+                  onChange={(e) => handleChange("matricula", e.target.value)} // Permitimos que el usuario la modifique
+                  fullWidth
+                  placeholder="1234-ABC" // Puedes poner un placeholder si quieres dar una pista sobre el formato
+                />
+              </div>
                 
             <div>
               <InputLabel>Día</InputLabel>
