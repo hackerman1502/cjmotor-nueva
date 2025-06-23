@@ -60,7 +60,7 @@ export default function Home() {
       if (user) {
         const { data: perfil, error } = await supabase
           .from("perfiles")
-          .select("nombre, telefono")
+          .select("nombre, telefono, matricula")
           .eq("id", user.id)
           .single();
 
@@ -68,7 +68,8 @@ export default function Home() {
           setForm((prev) => ({
             ...prev,
             nombre: perfil.nombre || "",
-            telefono: perfil.telefono || ""
+            telefono: perfil.telefono || "",
+            matricula: perfil.matricula || "",
           }));
         }
       }
@@ -227,15 +228,7 @@ const handleSubmit = async (e) => {
                 }}
               />
             </div>
-                  <div>
-                <InputLabel>Matrícula</InputLabel>
-                <Input
-                  value={form.matricula}
-                  onChange={(e) => handleChange("matricula", e.target.value)}
-                  fullWidth
-                  placeholder="1234-ABC"
-                />
-              </div>
+                
             <div>
               <InputLabel>Día</InputLabel>
               <Input type="date" value={form.fecha} onChange={handleSelectDia} fullWidth />
