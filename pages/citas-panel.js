@@ -122,16 +122,18 @@ export default function CitasPanel() {
         return;
       }
 
-      const { error: insertError } = await supabase
-        .from("citas_completadas")
-        .insert([{
-          nombre: cita.nombre,
-          telefono: cita.telefono,
-          servicio: cita.servicio,
-          fecha: cita.fecha,
-          hora: cita.hora,
-          estado: "Completada"
-        }]);
+          const { error: insertError } = await supabase
+      .from("citas_completadas")
+      .insert([{
+        nombre: cita.nombre,
+        telefono: cita.telefono,
+        matricula: cita.matricula,
+        servicio: cita.servicio,
+        fecha: cita.fecha,
+        hora: cita.hora,
+        estado: "Completada",
+        usuario_id: cita.usuario_id  // 🧠 importante para el historial del usuario
+      }]);
 
       if (insertError) {
         console.error("Error al insertar:", insertError);
